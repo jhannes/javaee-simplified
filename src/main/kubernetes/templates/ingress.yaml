@@ -1,0 +1,17 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: javaee-simplified
+spec:
+  rules:
+  - host: localhost
+    http:
+      paths:
+        - path: /
+          pathType: Prefix
+          backend:
+            service:
+              name: javaee-simplified
+              port:
+                number: 80
+
