@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: javaee-simplified
+  labels:
+    app: javaee-simplified
+spec:
+  selector:
+    matchLabels:
+      app: javaee-simplified
+  template:
+    metadata:
+      labels:
+        app: javaee-simplified
+    spec:
+      containers:
+        - image: ghcr.io/jhannes/javaee-without-spring:latest
+          name: javaee-simplified
+          ports:
+            - containerPort: 8080
+      imagePullSecrets:
+        - name: pull-secret
