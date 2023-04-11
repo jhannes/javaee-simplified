@@ -1,16 +1,23 @@
 package com.soprasteria.simplejavaee;
 
+import org.eclipse.jetty.server.CustomRequestLog;
+import org.eclipse.jetty.server.ResourceService;
 import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.servlet.DefaultServlet;
+import org.eclipse.jetty.servlet.ServletContextHandler;
+import org.eclipse.jetty.servlet.ServletHolder;
 import org.eclipse.jetty.util.resource.Resource;
-import org.eclipse.jetty.webapp.WebAppContext;
 
 public class JavaZoneDemoServer {
 
     private final Server server = new Server(8080);
 
     public JavaZoneDemoServer() {
-        var handler = new WebAppContext(Resource.newClassPathResource("/webapp"), "/");
+        var handler = new ServletContextHandler();
+        handler.setBaseResource(Resource.newClassPathResource("/webapp"));
+        handler.addServlet(new ServletHolder(new DefaultServlet(new ResourceService())), "/*");
         server.setHandler(handler);
+        server.setRequestLog(new CustomRequestLog());
     }
 
     public static void main(String[] args) throws Exception {
