@@ -60,6 +60,41 @@
                     </execution>
                 </executions>
             </plugin>
+            <plugin>
+                <groupId>org.openapitools</groupId>
+                <artifactId>openapi-generator-maven-plugin</artifactId>
+                <version>6.2.0</version>
+                <configuration>
+                    <inputSpec>${project.basedir}/src/main/resources/webapp/api-doc/hello-world.yaml</inputSpec>
+                    <modelNameSuffix>Dto</modelNameSuffix>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>java</id>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+                        <configuration>
+                            <generatorName>java-annotationfree</generatorName>
+                            <modelPackage>simplejavaee.generated.model</modelPackage>
+                            <generateSupportingFiles>true</generateSupportingFiles>
+                            <generateApis>false</generateApis>
+                            <output>target/generated-sources/openapi-java</output>
+                            <configOptions>
+                                <generateModelTests>true</generateModelTests>
+                            </configOptions>
+                        </configuration>
+                    </execution>
+                </executions>
+                <dependencies>
+                    <dependency>
+                        <groupId>io.github.jhannes.openapi</groupId>
+                        <artifactId>openapi-generator-java-annotationfree</artifactId>
+                        <version>0.4.2</version>
+                    </dependency>
+                </dependencies>
+            </plugin>
+
         </plugins>
     </build>
 </project>
