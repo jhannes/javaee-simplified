@@ -16,6 +16,14 @@
         </dependency>
 
         <dependency>
+            <groupId>org.webjars</groupId>
+            <artifactId>swagger-ui</artifactId>
+            <version>4.18.1</version>
+            <scope>runtime</scope>
+        </dependency>
+
+
+        <dependency>
             <groupId>org.logevents</groupId>
             <artifactId>logevents</artifactId>
             <version>0.4.4</version>

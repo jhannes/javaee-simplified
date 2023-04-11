@@ -16,6 +16,7 @@ public class JavaZoneDemoServer {
         var handler = new ServletContextHandler();
         handler.setBaseResource(Resource.newClassPathResource("/webapp"));
         handler.addServlet(new ServletHolder(new DefaultServlet(new ResourceService())), "/*");
+        handler.addServlet(new ServletHolder(new WebJarServlet("swagger-ui")), "/api-doc/swagger-ui/*");
         server.setHandler(handler);
         server.setRequestLog(new CustomRequestLog());
     }

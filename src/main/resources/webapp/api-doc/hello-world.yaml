@@ -1,0 +1,50 @@
+openapi: 3.0.2
+info:
+  title: Todos
+  description: A trivial TODO application
+  version: 0.1.0
+servers:
+  - description: default
+    url: /api
+paths:
+  /todos:
+    post:
+      tags: [ todos ]
+      operationId: createTodo
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TodoItem'
+      responses:
+        201:
+          description: Created
+    get:
+      tags: [ todos ]
+      operationId: listTodos
+      responses:
+        200:
+          description: Todo items
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TodoItem'
+components:
+  schemas:
+    TodoItem:
+      properties:
+        id:
+          type: string
+          format: uuid
+        title:
+          type: string
+        description:
+          type: string
+        created:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+        - title
