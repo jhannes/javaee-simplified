@@ -14,7 +14,7 @@ class TodoApiTest {
 
     private final TodoApi todoApi = new TodoApi();
 
-    private final SampleModelData sampleData = new SampleModelData(-1);
+    private final SampleModelData sampleData = new SampleModelData(System.currentTimeMillis());
 
     @Test
     void shouldIncludeSavedTodo() throws SQLException {

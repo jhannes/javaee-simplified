@@ -1,6 +1,7 @@
 package com.soprasteria.simplejavaee;
 
 import com.soprasteria.simplejavaee.infrastructure.ApplicationDataSource;
+import org.flywaydb.core.Flyway;
 import org.junit.jupiter.api.extension.AfterEachCallback;
 import org.junit.jupiter.api.extension.BeforeEachCallback;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -22,6 +23,8 @@ public @interface TestDataSource {
         static {
             PG_SIMPLE_DATA_SOURCE.setURL("jdbc:postgresql://localhost:5432/postgres");
             PG_SIMPLE_DATA_SOURCE.setUser("postgres");
+
+            Flyway.configure().dataSource(PG_SIMPLE_DATA_SOURCE).load().migrate();
         }
 
 
