@@ -1,6 +1,7 @@
 package com.soprasteria.simplejavaee;
 
 import com.soprasteria.simplejavaee.infrastructure.ApplicationDataSource;
+import jakarta.inject.Inject;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.POST;
@@ -17,6 +18,7 @@ public class TodoApi {
 
     private final ApplicationEmailService emailService;
 
+    @Inject
     public TodoApi(ApplicationEmailService emailService) {
         this.emailService = emailService;
     }
@@ -46,6 +48,7 @@ public class TodoApi {
     }
 
     @POST
+    @Path("/withEmail")
     @Consumes("application/json")
     public void saveTodoAndEmail(TodoItemDto todoItem) throws SQLException {
         try (var tx = ApplicationDataSource.requireTransaction()) {

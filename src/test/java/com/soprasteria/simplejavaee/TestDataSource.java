@@ -30,9 +30,8 @@ public @interface TestDataSource {
 
         @Override
         public void beforeEach(ExtensionContext context) throws Exception {
-            ApplicationDataSource.setDataSource(PG_SIMPLE_DATA_SOURCE);
             context.getStore(ExtensionContext.Namespace.GLOBAL)
-                    .put("connectionContext", ApplicationDataSource.beginConnection());
+                    .put("connectionContext", ApplicationDataSource.beginConnection(PG_SIMPLE_DATA_SOURCE));
         }
 
         @Override

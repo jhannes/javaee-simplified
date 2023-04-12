@@ -38,11 +38,16 @@ public class ApplicationDataSource {
 
 
     private static final ThreadLocal<Connection> threadConnection = new ThreadLocal<>();
-    private static DataSource dataSource;
-
 
     public static PreparedStatement prepareStatement(String sql) throws SQLException {
-        return threadConnection.get().prepareStatement(sql);
+        return getConnection().prepareStatement(sql);
+    }
+
+    private static Connection getConnection() {
+        if (threadConnection.get() == null) {
+            throw new IllegalStateException("Call beginConnection first");
+        }
+        return threadConnection.get();
     }
 
     public static <T> List<T> queryAllRows(PreparedStatement statement, ThrowingFunction<ResultSet, T, SQLException> mapper) throws SQLException {
@@ -55,22 +60,18 @@ public class ApplicationDataSource {
         }
     }
 
-    public static void setDataSource(DataSource dataSource) {
-        ApplicationDataSource.dataSource = dataSource;
-    }
-
-    public static ThrowingClosable<SQLException> beginConnection() throws SQLException {
+    public static ThrowingClosable<SQLException> beginConnection(DataSource dataSource) throws SQLException {
         // TODO: We want to lazy-initialize getting the connection (but still not dispense connections if not started)
         var connection = dataSource.getConnection();
         threadConnection.set(connection);
         return () -> {
-            threadConnection.get().close();
+            getConnection().close();
             threadConnection.remove();
         };
     }
 
     public static Transaction requireTransaction() throws SQLException {
         // TODO: What if there already is a transaction?
-        return new Transaction(threadConnection.get());
+        return new Transaction(getConnection());
     }
 }
