@@ -1,9 +1,11 @@
 package com.soprasteria.simplejavaee;
 
+import org.junit.jupiter.api.Test;
 import simplejavaee.generated.model.SampleModelData;
 import simplejavaee.generated.model.TodoItemDto;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+
 
 class TodoApiTest {
 

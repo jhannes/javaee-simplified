@@ -1,6 +1,8 @@
 package com.soprasteria.simplejavaee;
 
+import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.GET;
+import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
 import simplejavaee.generated.model.SampleModelData;
@@ -14,5 +16,10 @@ public class TodoApi {
     @Produces("application/json")
     public List<TodoItemDto> listTodos() {
         return new SampleModelData(System.currentTimeMillis()).sampleListOfTodoItemDto();
+    }
+
+    @POST
+    @Consumes("application/json")
+    public void saveTodo(TodoItemDto todoItem) {
     }
 }
