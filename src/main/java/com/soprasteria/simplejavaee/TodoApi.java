@@ -15,7 +15,7 @@ import java.util.UUID;
 @Path("/todos")
 public class TodoApi {
 
-    private ApplicationEmailService emailService;
+    private final ApplicationEmailService emailService;
 
     public TodoApi(ApplicationEmailService emailService) {
         this.emailService = emailService;
@@ -48,7 +48,10 @@ public class TodoApi {
     @POST
     @Consumes("application/json")
     public void saveTodoAndEmail(TodoItemDto todoItem) throws SQLException {
-        saveTodo(todoItem);
-        emailService.sendNewTodoEmail(todoItem);
+        try (var tx = ApplicationDataSource.requireTransaction()) {
+            saveTodo(todoItem);
+            emailService.sendNewTodoEmail(todoItem);
+            tx.setComplete();
+        }
     }
 }

@@ -1,7 +1,6 @@
 package com.soprasteria.simplejavaee;
 
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 import simplejavaee.generated.model.SampleModelData;
 import simplejavaee.generated.model.TodoItemDto;
 
@@ -13,12 +12,11 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 
 @TestDataSource
 class TodoApiTest {
-    private ApplicationEmailService emailServiceMock = mock(ApplicationEmailService.class);
+    private final ApplicationEmailService emailServiceMock = mock(ApplicationEmailService.class);
 
     private final TodoApi todoApi = new TodoApi(emailServiceMock);
 
@@ -38,6 +36,10 @@ class TodoApiTest {
         var savedTodoItem = sampleData.sampleTodoItemDto();
         todoApi.saveTodoAndEmail(savedTodoItem);
         verify(emailServiceMock).sendNewTodoEmail(savedTodoItem);
+
+        assertThat(todoApi.listTodos())
+                .extracting(TodoItemDto::getId)
+                .contains(savedTodoItem.getId());
     }
 
     @Test
