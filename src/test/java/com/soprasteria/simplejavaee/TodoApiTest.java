@@ -4,9 +4,12 @@ import org.junit.jupiter.api.Test;
 import simplejavaee.generated.model.SampleModelData;
 import simplejavaee.generated.model.TodoItemDto;
 
+import java.sql.SQLException;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 
+@TestDataSource
 class TodoApiTest {
 
     private final TodoApi todoApi = new TodoApi();
@@ -14,7 +17,7 @@ class TodoApiTest {
     private final SampleModelData sampleData = new SampleModelData(-1);
 
     @Test
-    void shouldIncludeSavedTodo() {
+    void shouldIncludeSavedTodo() throws SQLException {
         var savedTodoItem = sampleData.sampleTodoItemDto();
         todoApi.saveTodo(savedTodoItem);
         assertThat(todoApi.listTodos())
