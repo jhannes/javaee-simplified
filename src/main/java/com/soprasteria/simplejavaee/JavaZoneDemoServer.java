@@ -31,6 +31,7 @@ public class JavaZoneDemoServer {
     public JavaZoneDemoServer() {
         var handler = new ServletContextHandler();
         handler.setBaseResource(Resource.newClassPathResource("/webapp"));
+        handler.addFilter(new FilterHolder(new RequestContextFilter()), "/*", EnumSet.of(DispatcherType.REQUEST));
         handler.addFilter(new FilterHolder(new ApplicationFilter(dataSource)), "/api/*", EnumSet.of(DispatcherType.REQUEST));
         handler.addServlet(new ServletHolder(new DefaultServlet(new ResourceService())), "/*");
         handler.addServlet(new ServletHolder(new ServletContainer(getResourceConfig())), "/api/*");
