@@ -1,6 +1,9 @@
 package com.soprasteria.johannes.simplejava;
 
+import com.soprasteria.johannes.simplejava.server.ContentServlet;
 import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.servlet.ServletContextHandler;
+import org.eclipse.jetty.servlet.ServletHolder;
 
 import java.net.URI;
 
@@ -10,6 +13,9 @@ public class ApplicationServer {
 
     public ApplicationServer(int port) {
         server = new Server(port);
+        var context = new ServletContextHandler();
+        context.addServlet(new ServletHolder(new ContentServlet()), "/*");
+        server.setHandler(context);
     }
 
     public void start() throws Exception {
@@ -21,6 +27,8 @@ public class ApplicationServer {
     }
 
     public static void main(String[] args) throws Exception {
-        new ApplicationServer(8080).start();
+        var server = new ApplicationServer(8080);
+        server.start();
+        System.out.println("Started on " + server.getURI());
     }
 }
