@@ -11,9 +11,10 @@ import org.eclipse.jetty.server.CachedContentFactory;
 import org.eclipse.jetty.server.ResourceService;
 import org.eclipse.jetty.util.URIUtil;
 import org.eclipse.jetty.util.resource.Resource;
+import org.eclipse.jetty.util.resource.ResourceCollection;
+import org.eclipse.jetty.util.resource.ResourceFactory;
 
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 
 @Slf4j
@@ -31,15 +32,17 @@ public class ContentServlet extends HttpServlet {
     }
 
     private static CachedContentFactory createContentFactory(String path) {
-        var sourcePath = Path.of("src", "main", "resources", path);
+        var sourceResource = Resource.newResource(Path.of("srsc", "main", "resources", path));
         var targetResource = Resource.newClassPathResource(path);
-        log.debug("targetResource={}", targetResource.toString());
-
-        if (Files.exists(sourcePath)) {
-            return new CachedContentFactory(null, Resource.newResource(sourcePath), new MimeTypes(), false, false, new CompressedContentFormat[0]);
+        if (sourceResource.exists()) {
+            return createContentFactory(new ResourceCollection(sourceResource, targetResource), false);
         } else {
-            return new CachedContentFactory(null, targetResource, new MimeTypes(), true, false, new CompressedContentFormat[0]);
+            return createContentFactory(targetResource, true);
         }
+    }
+
+    private static CachedContentFactory createContentFactory(ResourceFactory resources, boolean useFileMappedBuffer) {
+        return new CachedContentFactory(null, resources, new MimeTypes(), useFileMappedBuffer, false, new CompressedContentFormat[0]);
     }
 
     @Override

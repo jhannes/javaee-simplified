@@ -1,7 +1,7 @@
 openapi: 3.0.3
 info:
   title: Todo service
-  description: Todo service
+  description: Demo application for simple Java development
   version: 1.0.0
 paths:
   /api/login:
