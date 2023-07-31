@@ -14,7 +14,7 @@ public class ApplicationServer {
     public ApplicationServer(int port) {
         server = new Server(port);
         var context = new ServletContextHandler();
-        context.addServlet(new ServletHolder(new ContentServlet()), "/*");
+        context.addServlet(new ServletHolder(new ContentServlet("/webapp")), "/*");
         server.setHandler(context);
     }
 
