@@ -6,6 +6,9 @@ Steps:
 3. Run frontend code
 4. Run on kind
 5. Create OpenAPI spec with Swagger UI
+   * Write spec
+   * Publish on /api-doc/todo.yaml (update ContentServlet)
+   * Display using swagger-ui
 6. GET /login fails, forcing user to log in
 7. Implement login with OpenID Connect
 8. Implement post and list endpoints in memory

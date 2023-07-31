@@ -1,0 +1,40 @@
+openapi: 3.0.3
+info:
+  title: Todo service
+  description: Todo service
+  version: 1.0.0
+paths:
+  /api/login:
+    get:
+      responses:
+        200:
+          description: User is logged in, response is username and further info
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserProfile"
+        401:
+          description: User is not logged in and needs to post an access token to continue
+    post:
+      responses:
+        204:
+          description: Login successful, refresh /login to get profile
+        401:
+          description: Access token is invalid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                accessToken:
+                  type: string
+components:
+  schemas:
+    UserProfile:
+      properties:
+        username:
+          type: string
+        preferredLanguage:
+          type: string
+          enum: [ "en", "no" ]
+

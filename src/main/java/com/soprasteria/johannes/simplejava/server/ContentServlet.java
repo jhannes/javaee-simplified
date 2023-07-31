@@ -36,7 +36,7 @@ public class ContentServlet extends HttpServlet {
         log.debug("targetResource={}", targetResource.toString());
 
         if (Files.exists(sourcePath)) {
-            return new CachedContentFactory(null, targetResource, new MimeTypes(), false, false, new CompressedContentFormat[0]);
+            return new CachedContentFactory(null, Resource.newResource(sourcePath), new MimeTypes(), false, false, new CompressedContentFormat[0]);
         } else {
             return new CachedContentFactory(null, targetResource, new MimeTypes(), true, false, new CompressedContentFormat[0]);
         }
