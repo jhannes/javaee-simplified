@@ -19,6 +19,7 @@ class ApplicationServerTest {
         var response = HttpClient.newHttpClient().send(request, HttpResponse.BodyHandlers.ofString());
 
         assertThat(response.statusCode()).isEqualTo(200);
+        assertThat(response.headers().firstValue("content-type")).get().isEqualTo("text/html");
         assertThat(response.body()).contains("<title>JavaZone TODO app</title>");
     }
 

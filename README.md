@@ -1,8 +1,9 @@
 Steps:
 
 1. Run empty Jetty application
-2. Run frontend code
-3. Package for Docker
+2. Package for Docker
+    * `docker run ghcr.io/jhannes/java-simple-server`
+3. Run frontend code
 4. Run on kind
 5. Create OpenAPI spec with Swagger UI
 6. GET /login fails, forcing user to log in
