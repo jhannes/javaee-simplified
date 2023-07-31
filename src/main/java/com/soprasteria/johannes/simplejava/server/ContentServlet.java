@@ -32,7 +32,7 @@ public class ContentServlet extends HttpServlet {
     }
 
     private static CachedContentFactory createContentFactory(String path) {
-        var sourceResource = Resource.newResource(Path.of("srsc", "main", "resources", path));
+        var sourceResource = Resource.newResource(Path.of("src", "main", "resources", path));
         var targetResource = Resource.newClassPathResource(path);
         if (sourceResource.exists()) {
             return createContentFactory(new ResourceCollection(sourceResource, targetResource), false);

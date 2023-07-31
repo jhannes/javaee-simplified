@@ -10,6 +10,12 @@ Steps:
    * Publish on /api-doc/todo.yaml (update ContentServlet)
    * Display using swagger-ui
 6. GET /login fails, forcing user to log in
+    * Generate code from spec
+    * Generate code from openid-configuration spec ?
+    * Frontend gets /api/login
+    * On 401, offer user to log in
+    * Redirect to /api/login/start -> /api/login/callback
+    * Use code flow with client secret. Fix access token using a cookie and verify
 7. Implement login with OpenID Connect
 8. Implement post and list endpoints in memory
 9. Implement post and list endpoint in PostgreSQL
