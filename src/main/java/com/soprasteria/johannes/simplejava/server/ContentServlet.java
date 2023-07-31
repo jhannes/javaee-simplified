@@ -31,7 +31,7 @@ public class ContentServlet extends HttpServlet {
     private static CachedContentFactory createContentFactory(String path) {
         var sourcePath = Path.of("src", "main", "resources", path);
         if (Files.exists(sourcePath)) {
-            return new CachedContentFactory(null, Resource.newResource(sourcePath), new MimeTypes(), false, false, new CompressedContentFormat[0]);
+            return new CachedContentFactory(null, Resource.newClassPathResource(path), new MimeTypes(), false, false, new CompressedContentFormat[0]);
         } else {
             return new CachedContentFactory(null, Resource.newClassPathResource(path), new MimeTypes(), true, false, new CompressedContentFormat[0]);
         }
