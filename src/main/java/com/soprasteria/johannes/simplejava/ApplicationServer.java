@@ -1,10 +1,13 @@
 package com.soprasteria.johannes.simplejava;
 
+import com.soprasteria.johannes.simplejava.api.ApiConfiguration;
 import com.soprasteria.johannes.simplejava.server.ContentServlet;
+import com.soprasteria.johannes.simplejava.server.WebjarServlet;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
+import org.glassfish.jersey.servlet.ServletContainer;
 
 import java.net.URI;
 
@@ -16,8 +19,9 @@ public class ApplicationServer {
     public ApplicationServer(int port) {
         server = new Server(port);
         var context = new ServletContextHandler();
-        context.addServlet(new ServletHolder(new ContentServlet("/webapp")), "/*");
+        context.addServlet(new ServletHolder(new ServletContainer(new ApiConfiguration())), "/api/*");
         context.addServlet(new ServletHolder(new WebjarServlet("swagger-ui")), "/api-doc/swagger-ui/*");
+        context.addServlet(new ServletHolder(new ContentServlet("/webapp")), "/*");
         server.setHandler(context);
     }
 

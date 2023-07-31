@@ -1,4 +1,4 @@
-package com.soprasteria.johannes.simplejava;
+package com.soprasteria.johannes.simplejava.server;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
