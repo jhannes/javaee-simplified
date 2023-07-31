@@ -3,6 +3,10 @@
   "version": "1.0.0",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
+    "prettier": "prettier --write src/main/frontend",
+    "prettier:check": "prettier --check src/main/frontend",
+    "build": "npm run prettier:check && npm run build:parcel",
+    "build:parcel": "parcel build src/main/frontend/index.html --dist-dir target/classes/webapp",
     "start": "parcel watch src/main/frontend/index.html --dist-dir target/classes/webapp"
   },
   "dependencies": {

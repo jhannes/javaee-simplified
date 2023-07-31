@@ -4,6 +4,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.extern.slf4j.Slf4j;
 import org.eclipse.jetty.http.CompressedContentFormat;
 import org.eclipse.jetty.http.MimeTypes;
 import org.eclipse.jetty.server.CachedContentFactory;
@@ -15,6 +16,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
+@Slf4j
 public class ContentServlet extends HttpServlet {
 
     private final ResourceService resourceService = new ResourceService();
@@ -30,10 +32,13 @@ public class ContentServlet extends HttpServlet {
 
     private static CachedContentFactory createContentFactory(String path) {
         var sourcePath = Path.of("src", "main", "resources", path);
+        var targetResource = Resource.newClassPathResource(path);
+        log.debug("targetResource={}", targetResource.toString());
+
         if (Files.exists(sourcePath)) {
-            return new CachedContentFactory(null, Resource.newClassPathResource(path), new MimeTypes(), false, false, new CompressedContentFormat[0]);
+            return new CachedContentFactory(null, targetResource, new MimeTypes(), false, false, new CompressedContentFormat[0]);
         } else {
-            return new CachedContentFactory(null, Resource.newClassPathResource(path), new MimeTypes(), true, false, new CompressedContentFormat[0]);
+            return new CachedContentFactory(null, targetResource, new MimeTypes(), true, false, new CompressedContentFormat[0]);
         }
     }
 
