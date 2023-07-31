@@ -10,9 +10,10 @@ import org.eclipse.jetty.server.CachedContentFactory;
 import org.eclipse.jetty.server.ResourceService;
 import org.eclipse.jetty.util.URIUtil;
 import org.eclipse.jetty.util.resource.Resource;
-import org.eclipse.jetty.util.resource.ResourceFactory;
 
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 public class ContentServlet extends HttpServlet {
 
@@ -23,12 +24,17 @@ public class ContentServlet extends HttpServlet {
         resourceService.setWelcomeFactory(pathInContext -> URIUtil.addPaths(pathInContext, "index.html"));
     }
 
-    public ContentServlet(ResourceFactory resource) {
-        this(new CachedContentFactory(null, resource, new MimeTypes(), true, false, new CompressedContentFormat[0]));
+    public ContentServlet(String path) {
+        this(createContentFactory(path));
     }
 
-    public ContentServlet(String path) {
-        this(Resource.newClassPathResource(path));
+    private static CachedContentFactory createContentFactory(String path) {
+        var sourcePath = Path.of("src", "main", "resources", path);
+        if (Files.exists(sourcePath)) {
+            return new CachedContentFactory(null, Resource.newResource(sourcePath), new MimeTypes(), false, false, new CompressedContentFormat[0]);
+        } else {
+            return new CachedContentFactory(null, Resource.newClassPathResource(path), new MimeTypes(), true, false, new CompressedContentFormat[0]);
+        }
     }
 
     @Override
