@@ -1,6 +1,7 @@
 package com.soprasteria.johannes.simplejava.api;
 
 import com.soprasteria.johannes.generated.openid.model.DiscoveryDocumentDto;
+import com.soprasteria.johannes.generated.openid.model.TokenResponseDto;
 import com.soprasteria.johannes.simplejava.ApplicationConfig;
 import com.soprasteria.johannes.simplejava.eventsource.generated.model.UserProfileDto;
 import jakarta.inject.Inject;
@@ -8,14 +9,19 @@ import jakarta.json.bind.Jsonb;
 import jakarta.json.bind.JsonbBuilder;
 import jakarta.json.bind.JsonbConfig;
 import jakarta.json.bind.config.PropertyNamingStrategy;
+import jakarta.ws.rs.ClientErrorException;
+import jakarta.ws.rs.CookieParam;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.NotAuthorizedException;
 import jakarta.ws.rs.Path;
+import jakarta.ws.rs.QueryParam;
+import jakarta.ws.rs.ServerErrorException;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.NewCookie;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.UriBuilder;
 import jakarta.ws.rs.core.UriInfo;
+import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
 import java.net.http.HttpClient;
@@ -23,6 +29,7 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.UUID;
 
+@Slf4j
 @Path("/login")
 public class LoginController {
 
@@ -34,8 +41,11 @@ public class LoginController {
     private final Jsonb openidJsonb = JsonbBuilder.newBuilder().withConfig(jsonbConfigForOpenidConfiguration).build();
 
     @GET
-    public UserProfileDto getUserProfile() {
-        throw new NotAuthorizedException("Not Authorized");
+    public UserProfileDto getUserProfile(@CookieParam("accessToken") String accessToken) {
+        if (accessToken == null) {
+            throw new NotAuthorizedException("Not Authorized");
+        }
+        return new UserProfileDto();
     }
 
     @GET
@@ -45,6 +55,7 @@ public class LoginController {
         var authorizationState = UUID.randomUUID().toString();
         var redirectUri = info.getBaseUri().resolve("/api/login/callback");
         var authorizationUri = UriBuilder.fromUri(discoveryDocument.getAuthorizationEndpoint())
+                .queryParam("response_type", DiscoveryDocumentDto.ResponseTypesSupportedEnum.CODE)
                 .queryParam("client_id", config.getOpenidClientId())
                 .queryParam("state", authorizationState)
                 .queryParam("redirect_uri", redirectUri)
@@ -56,10 +67,53 @@ public class LoginController {
                 .build();
     }
 
+    @GET
+    @Path("/callback")
+    public Response callback(
+            @Context UriInfo info,
+            @QueryParam("code") String code,
+            @QueryParam("error") String error,
+            @QueryParam("error_description") String errorDescription,
+            @QueryParam("state") String state,
+            @CookieParam("authorizationState") String cookieState
+    ) throws InterruptedException, IOException {
+        if (!state.equals(cookieState)) {
+            log.info("Invalid authorization state parameter={} cookie={}", state, cookieState);
+            throw new ClientErrorException("Invalid authorization state parameter", 400);
+        }
+        if (error != null) {
+            log.error("Error on callback {}: {}", error, errorDescription);
+            throw new ServerErrorException(error + ": " + errorDescription, 500);
+        } else if (code == null) {
+            log.error("Callback without error or code!");
+            throw new ServerErrorException("Callback without error or code!", 500);
+        }
+        var redirectUri = info.getBaseUri().resolve("/api/login/callback");
+        var tokenPayload = UriBuilder.fromUri("")
+                .queryParam("client_id", config.getOpenidClientId())
+                .queryParam("client_secret", config.getOpenidSecret())
+                .queryParam("redirect_uri", redirectUri)
+                .queryParam("code", code)
+                .build()
+                .getRawQuery();
+        var discoveryDocument = getDiscoveryDocumentDto();
+        var request = HttpRequest.newBuilder(discoveryDocument.getTokenEndpoint())
+                .POST(HttpRequest.BodyPublishers.ofString(tokenPayload))
+                .header("Content-Type", "x-form-urlencoded,")
+                .build();
+        var response = HttpClient.newHttpClient().send(request, HttpResponse.BodyHandlers.ofInputStream());
+        var tokenResponse = openidJsonb.fromJson(response.body(), TokenResponseDto.class);
+
+        return Response
+                .temporaryRedirect(info.getBaseUri().resolve("/"))
+                .cookie(new NewCookie.Builder("authorizationState").maxAge(0).value("").build())
+                .cookie(new NewCookie.Builder("accessToken").value(tokenResponse.getAccessToken()).build())
+                .build();
+    }
+
     private DiscoveryDocumentDto getDiscoveryDocumentDto() throws IOException, InterruptedException {
         var request = HttpRequest.newBuilder(config.getOpenidConfigurationEndpoint()).GET().build();
-        var response = HttpClient.newHttpClient()
-                .send(request, HttpResponse.BodyHandlers.ofInputStream());
+        var response = HttpClient.newHttpClient().send(request, HttpResponse.BodyHandlers.ofInputStream());
         return openidJsonb.fromJson(response.body(), DiscoveryDocumentDto.class);
     }
 }

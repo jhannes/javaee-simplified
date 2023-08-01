@@ -22,4 +22,8 @@ public class ApplicationConfig {
     public String getOpenidClientId() {
         return env.get("OPENID_CLIENT_ID");
     }
+
+    public String getOpenidSecret() {
+        return env.get("OPENID_CLIENT_SECRET");
+    }
 }
