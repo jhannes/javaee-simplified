@@ -150,7 +150,7 @@
                     <dependency>
                         <groupId>io.github.jhannes.openapi</groupId>
                         <artifactId>openapi-generator-java-annotationfree</artifactId>
-                        <version>0.5.3-SNAPSHOT</version>
+                        <version>0.5.4-SNAPSHOT</version>
                     </dependency>
                 </dependencies>
             </plugin>

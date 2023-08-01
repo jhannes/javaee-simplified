@@ -1,35 +1,109 @@
 openapi: "3.0.2"
 info:
-  description: "Open ID Connect Discovery"
-  title: "Open ID Connect"
-  version: "1.0.0-draft"
+  description: Open ID Connect Discovery
+  title: Open ID Connect
+  version: 1.0.0-draft
 paths:
   /.well-known/openid-configuration:
     get:
+      tags: [ Discovery ]
+      operationId: getDiscoveryDocument
       responses:
-        "200":
-          description: "The openid discovery document"
+        200:
+          description: The openid discovery document
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/DiscoveryDocument"
   /.well-known/keys:
     get:
+      tags: [ Discovery ]
+      operationId: getJwksDocument
       responses:
-        "200":
-          description: "The cryptographic key description document"
+        200:
+          description: The cryptographic key description document
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/JwksDocument"
+  /authorize:
+    get:
+      operationId: startAuthorization
+      tags: [ IdentityProvider ]
+      description: Starts an authentication flow. If the request is successful, the user is returned to the redirect_uri with a parameter, otherwise the user is redirected with an error parameter
+      parameters:
+        - name: response_type
+          in: query
+          schema:
+            $ref: "#/components/schemas/ResponseType"
+        - name: client_id
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: state
+          in: query
+          schema:
+            type: string
+        - name: redirect_uri
+          in: query
+          schema:
+            type: string
+            format: uri
+        - name: scope
+          in: query
+          schema:
+            type: string
+      responses:
+        304:
+          description: User is redirected back to redirect_uri
+  /callback:
+    get:
+      tags: [ IdentityClient ]
+      operationId: handleCallback
+      description: Completes the authentication flow. This should be implemented by the openid connect client. The client should normally invoke the token endpoint with the code value provided by the identity provider.
+      parameters:
+        - name: state
+          in: query
+          schema:
+            type: string
+        - name: code
+          in: query
+          schema:
+            type: string
+        - name: error
+          in: query
+          schema:
+            type: string
+        - name: error_description
+          in: query
+          schema:
+            type: string
+      responses:
+        200:
+          description: Used if the authorization failed and the openid connect client wants to display an error message to the user
+        304:
+          description: After the authentication is complete, the openid connect client should set a session cookie and return the user to a suitable location
+          headers:
+            Set-Cookie:
+              description: Used to set the session cookie for the client
+              schema:
+                type: string
+            Location:
+              description: The URI that the open id connect client wants the user the use to continue
+              schema:
+                type: string
+                format: uri
   /token:
     post:
-      operationId: "fetchToken"
+      tags: [ IdentityProvider ]
+      operationId: fetchToken
       parameters:
-        - name: "Authorization"
-          in: "header"
-          description: "Used with token-exchange to validate client_name - use Basic\
-          \ authentication with client_id:client_secret"
+        - name: Authorization
+          in: header
+          description:
+            Used with token-exchange to validate client_name - use Basic
+            authentication with client_id:client_secret
           schema:
             type: string
       requestBody:
@@ -39,6 +113,12 @@ paths:
             schema:
               type: object
               properties:
+                grant_type:
+                  enum:
+                    - implicit
+                    - authorization_code
+                    - client_credentials
+                    - refresh_token
                 code:
                   type: string
                 client_id:
@@ -47,43 +127,73 @@ paths:
                   type: string
                 redirect_uri:
                   type: string
+                  format: uri
                 subject_token:
                   type: string
-                  description: "Used with grant_type=urn:ietf:params:oauth:grant-type:token-exchange\
-                    \ to do a token exchange"
+                  description:
+                    Used with grant_type=urn:ietf:params:oauth:grant-type:token-exchange
+                    to do a token exchange
                 audience:
                   type: string
-                  description: "Used with token-exchange to indicate which application\
-                    \ the token will be used with"
+                  description:
+                    Used with token-exchange to indicate which application
+                    the token will be used with
       responses:
-        "200":
-          description: "The tokens from the identity service"
+        200:
+          description: The tokens from the identity service
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/TokenResponse"
+  /userinfo:
+    get:
+      tags: [ IdentityProvider ]
+      operationId: getUserinfo
+      description: Returns information about the currently logged in user
+      parameters:
+        - name: Authorization
+          in: header
+          schema:
+            description: '"Bearer " + the access token'
+      responses:
+        200:
+          description: Returns the actual user information
+          content:
+            "application/json":
+              schema:
+                $ref: "#/components/schemas/Userinfo"
+        401:
+          description: Returned if the access token was invalid or expired
 components:
   schemas:
+    ResponseType:
+      enum:
+        - code
+        - token
+        - id_token
+        - code id_token
+        - id_token token
     TokenResponse:
       type: object
-      description: "Token response according to https://www.oauth.com/oauth2-servers/access-tokens/access-token-response/"
+      description: Token response according to https://www.oauth.com/oauth2-servers/access-tokens/access-token-response/
       properties:
         access_token:
           type: string
         token_type:
           type: string
-          description: "The type of token this is. Always the string 'bearer'"
-          example: "bearer"
+          description: The type of token this is. Always the string 'bearer'
+          example: bearer
         expires_in:
           type: integer
-          description: "The duration of time the access token is granted for in seconds"
+          description: The duration of time the access token is granted for in seconds
         scope:
           type: string
-          description: "Space separated list of granted scopes for the access_token"
+          description: Space separated list of granted scopes for the access_token
         id_token:
           type: string
-          description: "JWT which has format base64(JwtHeader) + '.' base64(JwtPayload)\
-            \ + '.' + base64(signature)"
+          description:
+            JWT which has format
+            base64(JwtHeader) + '.' base64(JwtPayload) + '.' + base64(signature)
         refresh_token:
           type: string
       required:
@@ -94,46 +204,46 @@ components:
       properties:
         typ:
           type: string
-          description: "Type of JWT"
-          example: "JWT"
+          description: Type of JWT
+          example: JWT
         kid:
           type: string
-          description: "Key ID - used to look up the public key/X.509 certificate\
-            \ in the JWKS"
+          description:
+            Key ID - used to look up the public key/X.509 certificate in the JWKS
         alg:
           type: string
-          description: "Algorithm used to sign the JWT. Normally RS256 (RSA signed\
-            \ SHA-256)"
+          description:
+            Algorithm used to sign the JWT. Normally RS256 (RSA signed SHA-256)
     JwtPayload:
       type: object
       properties:
         iss:
           type: string
-          format: uri
-          description: "Issuer - the URI for the login provider"
+          format: url
+          description: Issuer - the URI for the login provider
         sub:
           type: string
-          description: "Subject - the unique identifier for the logged in user"
+          description: Subject - the unique identifier for the logged in user
         aud:
           type: string
-          description: "Audience - the client_id that the JWT was issued to"
+          description: Audience - the client_id that the JWT was issued to
         name:
           type: string
-          description: "The name of the logged in user"
+          description: The name of the logged in user
         email:
           type: string
-          description: "The email of the logged in user"
+          description: The email of the logged in user
         orgId:
           type: string
-          description: "The unique identifier of the organization that the user has\
-            \ selected"
+          description:
+            The unique identifier of the organization that the user has selected
         org:
           type: string
-          description: "The name of the organization that the user has selected"
+          description: The name of the organization that the user has selected
         pid:
           type: string
-          description: "For JWT from ID-porten, contains national identity number"
-          example: "24079420405"
+          description: For JWT from ID-porten, contains national identity number
+          example: 24079420405
       required:
         - iss
         - aud
@@ -147,6 +257,9 @@ components:
           type: string
           format: uri
         token_endpoint:
+          type: string
+          format: uri
+        userinfo_endpoint:
           type: string
           format: uri
         end_session_endpoint:
@@ -169,13 +282,7 @@ components:
           type: array
           uniqueItems: true
           items:
-            type: string
-            enum:
-              - code
-              - token
-              - id_token
-              - code id_token
-              - id_token token
+            $ref: "#/components/schemas/ResponseType"
         response_modes_supported:
           type: array
           uniqueItems: true
@@ -226,10 +333,10 @@ components:
       properties:
         kty:
           type: string
-          example: "RSA"
+          example: RSA
         use:
           type: string
-          example: "sig"
+          example: sig
         kid:
           type: string
         x5c:
@@ -237,3 +344,18 @@ components:
       required:
         - kid
         - x5c
+    Userinfo:
+      type: object
+      properties:
+        sub:
+          description: Subject identifier
+          type: string
+        name:
+          type: string
+        email:
+          format: email
+      required:
+        - sub
+      additionalProperties:
+        type: object
+
