@@ -10,11 +10,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class ApplicationServerTest {
 
+    private final ApplicationServer server = ApplicationServer.start(0);
+
     @Test
     void shouldStartOnSpecifiedPort() throws Exception {
-        var server = new ApplicationServer(0);
-        server.start();
-
         var request = HttpRequest.newBuilder(server.getURI()).GET().build();
         var response = HttpClient.newHttpClient().send(request, HttpResponse.BodyHandlers.ofString());
 
@@ -22,5 +21,4 @@ class ApplicationServerTest {
         assertThat(response.headers().firstValue("content-type")).get().isEqualTo("text/html");
         assertThat(response.body()).contains("<title>JavaZone TODO app</title>");
     }
-
 }

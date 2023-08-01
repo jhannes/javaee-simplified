@@ -3,6 +3,7 @@ package com.soprasteria.johannes.simplejava;
 import com.soprasteria.johannes.simplejava.api.ApiConfiguration;
 import com.soprasteria.johannes.simplejava.server.ContentServlet;
 import com.soprasteria.johannes.simplejava.server.WebjarServlet;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletContextHandler;
@@ -33,9 +34,16 @@ public class ApplicationServer {
         return server.getURI();
     }
 
-    public static void main(String[] args) throws Exception {
-        var server = new ApplicationServer(8080);
+
+    @SneakyThrows
+    public static ApplicationServer start(int port) {
+        var server = new ApplicationServer(port);
         server.start();
+        return server;
+    }
+
+    public static void main(String[] args) throws Exception {
+        var server = start(8080);
         log.info("Started on {}", server.getURI());
     }
 }
