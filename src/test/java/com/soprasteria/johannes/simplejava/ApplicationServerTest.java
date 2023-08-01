@@ -1,5 +1,6 @@
 package com.soprasteria.johannes.simplejava;
 
+import com.soprasteria.johannes.infrastructure.Environment;
 import org.junit.jupiter.api.Test;
 
 import java.net.http.HttpClient;
@@ -10,7 +11,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class ApplicationServerTest {
 
-    private final ApplicationServer server = ApplicationServer.start(0);
+    private final ApplicationServer server = ApplicationServer.start(0, new Environment());
 
     @Test
     void shouldStartOnSpecifiedPort() throws Exception {

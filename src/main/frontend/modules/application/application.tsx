@@ -1,5 +1,6 @@
 import React, { useEffect } from "react";
 import { DefaultApi } from "@api/api";
+import { LoggedOutError } from "@api/base";
 
 export function Application() {
   const defaultApi = new DefaultApi();
@@ -10,8 +11,11 @@ export function Application() {
         console.log("callback", value);
       })
       .catch((error) => {
-        alert("error trying to log in");
-        console.log("catch", error);
+        if (error instanceof LoggedOutError) {
+          window.location.pathname = "/api/login/start";
+        } else {
+          alert("error trying to log in");
+        }
       });
   }, []);
 

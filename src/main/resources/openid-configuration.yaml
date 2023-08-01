@@ -1,0 +1,239 @@
+openapi: "3.0.2"
+info:
+  description: "Open ID Connect Discovery"
+  title: "Open ID Connect"
+  version: "1.0.0-draft"
+paths:
+  /.well-known/openid-configuration:
+    get:
+      responses:
+        "200":
+          description: "The openid discovery document"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DiscoveryDocument"
+  /.well-known/keys:
+    get:
+      responses:
+        "200":
+          description: "The cryptographic key description document"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/JwksDocument"
+  /token:
+    post:
+      operationId: "fetchToken"
+      parameters:
+        - name: "Authorization"
+          in: "header"
+          description: "Used with token-exchange to validate client_name - use Basic\
+          \ authentication with client_id:client_secret"
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                code:
+                  type: string
+                client_id:
+                  type: string
+                client_secret:
+                  type: string
+                redirect_uri:
+                  type: string
+                subject_token:
+                  type: string
+                  description: "Used with grant_type=urn:ietf:params:oauth:grant-type:token-exchange\
+                    \ to do a token exchange"
+                audience:
+                  type: string
+                  description: "Used with token-exchange to indicate which application\
+                    \ the token will be used with"
+      responses:
+        "200":
+          description: "The tokens from the identity service"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TokenResponse"
+components:
+  schemas:
+    TokenResponse:
+      type: object
+      description: "Token response according to https://www.oauth.com/oauth2-servers/access-tokens/access-token-response/"
+      properties:
+        access_token:
+          type: string
+        token_type:
+          type: string
+          description: "The type of token this is. Always the string 'bearer'"
+          example: "bearer"
+        expires_in:
+          type: integer
+          description: "The duration of time the access token is granted for in seconds"
+        scope:
+          type: string
+          description: "Space separated list of granted scopes for the access_token"
+        id_token:
+          type: string
+          description: "JWT which has format base64(JwtHeader) + '.' base64(JwtPayload)\
+            \ + '.' + base64(signature)"
+        refresh_token:
+          type: string
+      required:
+        - access_token
+        - token_type
+    JwtHeader:
+      type: object
+      properties:
+        typ:
+          type: string
+          description: "Type of JWT"
+          example: "JWT"
+        kid:
+          type: string
+          description: "Key ID - used to look up the public key/X.509 certificate\
+            \ in the JWKS"
+        alg:
+          type: string
+          description: "Algorithm used to sign the JWT. Normally RS256 (RSA signed\
+            \ SHA-256)"
+    JwtPayload:
+      type: object
+      properties:
+        iss:
+          type: string
+          format: uri
+          description: "Issuer - the URI for the login provider"
+        sub:
+          type: string
+          description: "Subject - the unique identifier for the logged in user"
+        aud:
+          type: string
+          description: "Audience - the client_id that the JWT was issued to"
+        name:
+          type: string
+          description: "The name of the logged in user"
+        email:
+          type: string
+          description: "The email of the logged in user"
+        orgId:
+          type: string
+          description: "The unique identifier of the organization that the user has\
+            \ selected"
+        org:
+          type: string
+          description: "The name of the organization that the user has selected"
+        pid:
+          type: string
+          description: "For JWT from ID-porten, contains national identity number"
+          example: "24079420405"
+      required:
+        - iss
+        - aud
+        - sub
+    DiscoveryDocument:
+      type: object
+      properties:
+        issuer:
+          type: string
+        authorization_endpoint:
+          type: string
+          format: uri
+        token_endpoint:
+          type: string
+          format: uri
+        end_session_endpoint:
+          type: string
+          format: uri
+        jwks_uri:
+          type: string
+          format: uri
+        scopes_supported:
+          type: array
+          uniqueItems: true
+          items:
+            format: string
+        claims_supported:
+          type: array
+          uniqueItems: true
+          items:
+            format: string
+        response_types_supported:
+          type: array
+          uniqueItems: true
+          items:
+            type: string
+            enum:
+              - code
+              - token
+              - id_token
+              - code id_token
+              - id_token token
+        response_modes_supported:
+          type: array
+          uniqueItems: true
+          items:
+            type: string
+            enum:
+              - query
+              - fragment
+              - form_post
+        subject_types_supported:
+          type: array
+          uniqueItems: true
+          items:
+            type: string
+            enum:
+              - pairwise
+              - public
+        code_challenge_methods_supported:
+          type: array
+          uniqueItems: true
+          items:
+            type: string
+            enum:
+              - S256
+              - plain
+        id_token_signing_alg_values_supported:
+          type: array
+          items:
+            type: string
+            enum:
+              - RS256
+        x_sso_frame:
+          type: string
+          format: url
+      required:
+        - response_types_supported
+    JwksDocument:
+      type: object
+      properties:
+        keys:
+          type: array
+          items:
+            $ref: "#/components/schemas/JwksKey"
+      required:
+        - keys
+    JwksKey:
+      type: object
+      properties:
+        kty:
+          type: string
+          example: "RSA"
+        use:
+          type: string
+          example: "sig"
+        kid:
+          type: string
+        x5c:
+          type: string
+      required:
+        - kid
+        - x5c

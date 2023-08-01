@@ -1,5 +1,6 @@
 package com.soprasteria.johannes.simplejava;
 
+import com.soprasteria.johannes.infrastructure.Environment;
 import com.soprasteria.johannes.simplejava.api.ApiConfiguration;
 import com.soprasteria.johannes.simplejava.server.ContentServlet;
 import com.soprasteria.johannes.simplejava.server.WebjarServlet;
@@ -17,10 +18,10 @@ public class ApplicationServer {
 
     private final Server server;
 
-    public ApplicationServer(int port) {
+    public ApplicationServer(int port, ApplicationConfig config) {
         server = new Server(port);
         var context = new ServletContextHandler();
-        context.addServlet(new ServletHolder(new ServletContainer(new ApiConfiguration())), "/api/*");
+        context.addServlet(new ServletHolder(new ServletContainer(new ApiConfiguration(config))), "/api/*");
         context.addServlet(new ServletHolder(new WebjarServlet("swagger-ui")), "/api-doc/swagger-ui/*");
         context.addServlet(new ServletHolder(new ContentServlet("/webapp")), "/*");
         server.setHandler(context);
@@ -30,20 +31,20 @@ public class ApplicationServer {
         server.start();
     }
 
+    @SneakyThrows
     public URI getURI() {
-        return server.getURI();
+        return new URI("http://localhost:" + server.getURI().getPort());
     }
 
-
     @SneakyThrows
-    public static ApplicationServer start(int port) {
-        var server = new ApplicationServer(port);
+    public static ApplicationServer start(int port, Environment env) {
+        var server = new ApplicationServer(port, new ApplicationConfig(env));
         server.start();
         return server;
     }
 
     public static void main(String[] args) throws Exception {
-        var server = start(8080);
+        var server = start(8080, new Environment());
         log.info("Started on {}", server.getURI());
     }
 }
