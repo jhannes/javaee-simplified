@@ -8,7 +8,7 @@ paths:
     get:
       responses:
         200:
-          description: User is logged in, response is username and further info
+          description: User is logged in, content is username and further info
           content:
             application/json:
               schema:

@@ -1,7 +1,10 @@
 package com.soprasteria.johannes.simplejava.api;
 
+import com.soprasteria.johannes.generated.openid.model.UserinfoDto;
 import com.soprasteria.johannes.infrastructure.Environment;
 import com.soprasteria.johannes.simplejava.ApplicationServer;
+import com.soprasteria.johannes.simplejava.openid.HttpIdentityProviderApi;
+import jakarta.json.Json;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.Test;
 
@@ -44,6 +47,19 @@ class LoginControllerTest {
                         .hasParameter("client_id", clientId)
                         .hasParameter("scope")
                         .hasParameter("redirect_uri"));
+    }
+
+    @Test
+    void shouldDeserializeUserinfo() {
+        var json = Json.createObjectBuilder()
+                .add("sub", "the sub")
+                .add("name", "the name")
+                .add("user_name", "user (underscore) name")
+                .add("other", "other prop")
+                .build().toString();
+        var userinfoDto = HttpIdentityProviderApi.openidJsonb.fromJson(json, UserinfoDto.class);
+        //assertThat(content).containsEntry("other", "other prop");
+        assertThat(userinfoDto.getName()).isEqualTo("the name");
     }
 
     @SneakyThrows(URISyntaxException.class)

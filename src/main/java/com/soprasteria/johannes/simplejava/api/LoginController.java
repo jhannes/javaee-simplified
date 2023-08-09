@@ -1,17 +1,12 @@
 package com.soprasteria.johannes.simplejava.api;
 
 import com.soprasteria.johannes.generated.openid.IdentityProviderApi;
-import com.soprasteria.johannes.generated.openid.model.DiscoveryDocumentDto;
 import com.soprasteria.johannes.generated.openid.model.ResponseTypeDto;
-import com.soprasteria.johannes.generated.openid.model.TokenResponseDto;
-import com.soprasteria.johannes.generated.openid.model.UserinfoDto;
 import com.soprasteria.johannes.simplejava.ApplicationConfig;
 import com.soprasteria.johannes.simplejava.eventsource.generated.model.UserProfileDto;
+import com.soprasteria.johannes.simplejava.openid.HttpDiscoveryApi;
+import com.soprasteria.johannes.simplejava.openid.HttpIdentityProviderApi;
 import jakarta.inject.Inject;
-import jakarta.json.bind.Jsonb;
-import jakarta.json.bind.JsonbBuilder;
-import jakarta.json.bind.JsonbConfig;
-import jakarta.json.bind.config.PropertyNamingStrategy;
 import jakarta.ws.rs.ClientErrorException;
 import jakarta.ws.rs.CookieParam;
 import jakarta.ws.rs.GET;
@@ -24,13 +19,9 @@ import jakarta.ws.rs.core.NewCookie;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.UriBuilder;
 import jakarta.ws.rs.core.UriInfo;
-import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
 import java.util.UUID;
 
 @Slf4j
@@ -39,37 +30,36 @@ public class LoginController {
 
     @Inject
     private ApplicationConfig config;
-    private final JsonbConfig jsonbConfigForOpenidConfiguration = new JsonbConfig()
-            .withDeserializers(new EnumDeserializer())
-            .withPropertyNamingStrategy(PropertyNamingStrategy.LOWER_CASE_WITH_UNDERSCORES);
-    private final Jsonb openidJsonb = JsonbBuilder.newBuilder().withConfig(jsonbConfigForOpenidConfiguration).build();
 
     @GET
     public UserProfileDto getUserProfile(@CookieParam("accessToken") String accessToken) throws IOException, InterruptedException {
         if (accessToken == null || accessToken.isEmpty()) {
             throw new NotAuthorizedException("Not Authorized");
         }
-        var discoveryDocument = getDiscoveryDocumentDto();
-        var request = HttpRequest.newBuilder(discoveryDocument.getUserinfoEndpoint())
-                .GET().header("Authorization", "Bearer " + accessToken).build();
-        var response = HttpClient.newHttpClient().send(request, HttpResponse.BodyHandlers.ofString());
-        var userinfo = openidJsonb.fromJson(response.body(), UserinfoDto.class);
 
-        return new UserProfileDto().username(userinfo.get("name").toString());
+        var openIdClient = new HttpIdentityProviderApi(config);
+        var userinfoResponse = openIdClient.getUserinfo(accessToken);
+        return switch (userinfoResponse) {
+            case HttpIdentityProviderApi.GetUserinfoSuccess success -> new UserProfileDto().username(success.content().getName());
+            case HttpIdentityProviderApi.GetUserinfo401Response unauthorized -> throw new NotAuthorizedException(unauthorized.content());
+            case HttpIdentityProviderApi.GetUserinfoErrorResponse error -> throw new ServerErrorException(error.textResponse(), 500);
+        };
     }
 
     @GET
     @Path("/start")
-    public Response startLogin(@Context UriInfo info) {
-        var discoveryDocument = getDiscoveryDocumentDto();
+    public Response startLogin(@Context UriInfo info) throws IOException, InterruptedException {
+        var api = new HttpDiscoveryApi(config.getOpenidConfigurationEndpoint());
+        var discoveryDocument = api.getDiscoveryDocument();
         var authorizationState = UUID.randomUUID().toString();
-        var redirectUri = info.getBaseUri().resolve("/api/login/callback");
+        var query = new IdentityProviderApi.StartAuthorizationQuery()
+                .responseType(ResponseTypeDto.CODE)
+                .clientId(config.getOpenidClientId())
+                .scope("openid profile email")
+                .state(authorizationState)
+                .redirectUri(info.getBaseUri().resolve("/api/login/callback"));
         var authorizationUri = UriBuilder.fromUri(discoveryDocument.getAuthorizationEndpoint())
-                .queryParam("response_type", ResponseTypeDto.CODE)
-                .queryParam("client_id", config.getOpenidClientId())
-                .queryParam("state", authorizationState)
-                .queryParam("redirect_uri", redirectUri)
-                .queryParam("scope", "openid profile email")
+                .replaceQuery(query.toUrlEncoded())
                 .build();
         return Response
                 .temporaryRedirect(authorizationUri)
@@ -99,39 +89,25 @@ public class LoginController {
             throw new ServerErrorException("Callback without error or code!", 500);
         }
         var redirectUri = info.getBaseUri().resolve("/api/login/callback");
-        var tokenPayload = new IdentityProviderApi.FetchTokenForm()
-                .clientId(config.getOpenidClientId())
-                .clientSecret(config.getOpenidSecret())
-                .code(code)
-                .redirectUri(redirectUri)
-                .toUrlEncoded();
-        var discoveryDocument = getDiscoveryDocumentDto();
-        var request = HttpRequest.newBuilder(discoveryDocument.getTokenEndpoint())
-                .POST(HttpRequest.BodyPublishers.ofString(tokenPayload))
-                .header("Content-Type", "application/x-www-form-urlencoded")
-                .build();
-        var response = HttpClient.newHttpClient().send(request, HttpResponse.BodyHandlers.ofString());
 
-        if (response.statusCode() != 200) {
-            log.error("An error occurred status={}: {}", response.statusCode(), response.body());
-            return Response.serverError()
-                    .entity("An error occurred")
+        var openIdClient = new HttpIdentityProviderApi(config);
+        var tokenResponse = openIdClient.fetchToken(code, redirectUri);
+
+        return switch (tokenResponse) {
+            case HttpIdentityProviderApi.FetchTokenSuccess success -> Response
+                    .temporaryRedirect(info.getBaseUri().resolve("/"))
+                    .cookie(new NewCookie.Builder("authorizationState").maxAge(0).value("").build())
+                    .cookie(new NewCookie.Builder("accessToken").value(success.content().getAccessToken()).build())
                     .build();
-        }
-
-        var tokenResponse = openidJsonb.fromJson(response.body(), TokenResponseDto.class);
-
-        return Response
-                .temporaryRedirect(info.getBaseUri().resolve("/"))
-                .cookie(new NewCookie.Builder("authorizationState").maxAge(0).value("").build())
-                .cookie(new NewCookie.Builder("accessToken").value(tokenResponse.getAccessToken()).build())
-                .build();
+            case HttpIdentityProviderApi.FetchToken400Response errorResponse -> {
+                log.error("An error occurred error={}: {}", errorResponse.content().getError(), errorResponse.content().getErrorDescription());
+                throw new ServerErrorException("Error " + errorResponse.content().getError(), 500);
+            }
+            case HttpIdentityProviderApi.FetchTokenErrorResponse errorResponse -> {
+                log.error("An error occurred error={}: {}", errorResponse.statusCode(), errorResponse.textResponse());
+                throw new ServerErrorException("Error " + errorResponse.textResponse(), 500);
+            }
+        };
     }
 
-    @SneakyThrows
-    private DiscoveryDocumentDto getDiscoveryDocumentDto() {
-        var request = HttpRequest.newBuilder(config.getOpenidConfigurationEndpoint()).GET().build();
-        var response = HttpClient.newHttpClient().send(request, HttpResponse.BodyHandlers.ofInputStream());
-        return openidJsonb.fromJson(response.body(), DiscoveryDocumentDto.class);
-    }
 }

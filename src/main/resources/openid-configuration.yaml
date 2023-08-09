@@ -114,11 +114,7 @@ paths:
               type: object
               properties:
                 grant_type:
-                  enum:
-                    - implicit
-                    - authorization_code
-                    - client_credentials
-                    - refresh_token
+                  $ref: "#/components/schemas/GrantType"
                 code:
                   type: string
                 client_id:
@@ -138,6 +134,10 @@ paths:
                   description:
                     Used with token-exchange to indicate which application
                     the token will be used with
+              required:
+                - grant_type
+                - code
+                - client_id
       responses:
         200:
           description: The tokens from the identity service
@@ -145,6 +145,12 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/TokenResponse"
+        400:
+          description: Errors in request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OauthError"
   /userinfo:
     get:
       tags: [ IdentityProvider ]
@@ -153,7 +159,10 @@ paths:
       parameters:
         - name: Authorization
           in: header
+          required: true
           schema:
+            type: string
+            format: bearer token
             description: '"Bearer " + the access token'
       responses:
         200:
@@ -173,6 +182,13 @@ components:
         - id_token
         - code id_token
         - id_token token
+    GrantType:
+      enum:
+        - implicit
+        - authorization_code
+        - client_credentials
+        - refresh_token
+        - urn:ietf:params:oauth:grant-type:token-exchange
     TokenResponse:
       type: object
       description: Token response according to https://www.oauth.com/oauth2-servers/access-tokens/access-token-response/
@@ -268,6 +284,11 @@ components:
         jwks_uri:
           type: string
           format: uri
+        grant_types_supported:
+          type: array
+          uniqueItems: true
+          items:
+            $ref: "#/components/schemas/GrantType"
         scopes_supported:
           type: array
           uniqueItems: true
@@ -356,6 +377,12 @@ components:
           format: email
       required:
         - sub
-      additionalProperties:
-        type: object
-
+    OauthError:
+      properties:
+        error:
+          type: string
+        error_description:
+          type: string
+      required:
+        - error
+        - error_description

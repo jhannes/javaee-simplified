@@ -1,4 +1,4 @@
-package com.soprasteria.johannes.simplejava.api;
+package com.soprasteria.johannes.simplejava.openid;
 
 import jakarta.json.bind.serializer.DeserializationContext;
 import jakarta.json.bind.serializer.JsonbDeserializer;
