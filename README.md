@@ -19,6 +19,9 @@ of a Java application with the least magical technological choices.
   for a boot, assembly or classloading step when building the application
 * Defining APIs contract-first with OpenAPI generator and serving
   the API documentation with Swagger UI webjar
+  * API spec
+  * Swagger UI
+  * JAX-WS controller
 * Serving the front-end code from the same Jetty container using
   the frontend-maven-plugin, which means a single deployment for
   releases and avoiding cross-origin API requests
@@ -113,10 +116,18 @@ you can use [KinD (Kubernetes in Docker)](https://kind.sigs.k8s.io/)
 
 #### Setting up a Kind cluster
 
+Kind (Kubernetes in Docker) is a simple to install cluster that can run on a workstation inside
+docker. This lets you test full Kubernetes functionality without access to a full cluster on a
+cloud provider. Be aware that it may affect the performance of your workstation.
+
+This example uses Ingresses to route traffic to your deployment and PostgreSQL as a database. To
+support this, the following instructions include setting up Nginx as an ingress controller and the
+Zalando Postgres operator as base services in the cluster.
+
 1. Install the necessary dependencies
     * Docker desktop
     * [kind](https://kind.sigs.k8s.io/)
-2. Create a cluster on your local machine: `kind create cluster --config setup/create-cluster.yaml`
+2. Create a cluster on your local machine: `kind create cluster --config src/main/cluster/create-cluster.yaml`
     * `create-cluster.yaml` contains configuration to forward port 80 and 443 on your local machine to this cluster
     * This configuration includes support for ingress controllers. If you don't need this, you can do `kind create cluster`
     * The `kind create cluster` command updates `~/.kube/config` to make `kubectl` connect to the new cluster
@@ -143,11 +154,11 @@ If you have set up your hosts file (or DNS) correct, you can now access the appl
 
 ## Plan of attack
 
-* [ ] Serve simple http requests with Jetty
-* [ ] Serve TODO-list with JAX-RS
-* [ ] jib-maven-plugin
+* [x] Serve simple http requests with Jetty
+* [x] Serve TODO-list with JAX-RS
+* [x] jib-maven-plugin
+  * [x] Kubernetes
 * [ ] OpenAPI spec for TODO-list
 * [ ] Frontend-maven-plugin
 * [ ] OpenID connect
 * [ ] Fluent JDBC
-* [ ] Kubernetes
