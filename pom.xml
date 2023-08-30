@@ -42,6 +42,29 @@
                     <encoding>UTF-8</encoding>
                 </configuration>
             </plugin>
+            <plugin>
+                <groupId>com.google.cloud.tools</groupId>
+                <artifactId>jib-maven-plugin</artifactId>
+                <version>3.3.2</version>
+                <executions>
+                    <execution>
+                        <phase>install</phase>
+                        <goals>
+                            <goal>build</goal>
+                        </goals>
+                        <configuration>
+                            <to>
+                                <image>${jib.image.repository}</image>
+                            </to>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
+
+    <properties>
+        <jib.image.repository>${docker.registry}/${project.artifactId}:${image.tag}</jib.image.repository>
+        <image.tag>latest</image.tag>
+    </properties>
 </project>

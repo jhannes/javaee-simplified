@@ -64,6 +64,9 @@ and how to deploy on a Kubernetes cluster.
 The application is optimized for deployment with a Docker image
 running at GitHub Container Registry (GHCR).
 
+You must create a [personal access token](https://github.com/settings/tokens) with the `write:packages`
+privilege to use as your password.
+
 Update your `$HOME/.m2/settings.xml` with your GHCR registry. See
 the [Maven Password Encryption guide](https://maven.apache.org/guides/mini/guide-encryption.html)
 to avoid storing your passwords in plain text:
@@ -97,6 +100,11 @@ to avoid storing your passwords in plain text:
 ### Building and uploading the Docker image
 
 `mvn install`
+
+Running the image locally:
+
+`docker login ghcr.io/jhannes`
+`docker run -p 22080:21080 ghcr.io/jhannes/simplejavaee`
 
 ### Deploying to a Kubernetes cluster
 
