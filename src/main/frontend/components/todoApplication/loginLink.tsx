@@ -37,7 +37,7 @@ export function LoginLink() {
     return (
       <div>
         <span>{profile?.username}</span>
-        <a href={"/login/endsession"}>Logout</a>
+        <a href={"/api/login/endsession"}>Log out</a>
       </div>
     );
   } else {

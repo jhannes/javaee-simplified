@@ -107,11 +107,19 @@ public class LoginController {
         var tokenResponse = openidJsonb.fromJson(connection.getInputStream(), TokenResponseDto.class);
 
         return Response.temporaryRedirect(info.getBaseUri().resolve("/"))
-                .cookie(new NewCookie.Builder(ACCESS_TOKEN_COOKIE).value(tokenResponse.getAccessToken()).build())
+                .cookie(new NewCookie.Builder(ACCESS_TOKEN_COOKIE).path("/").value(tokenResponse.getAccessToken()).build())
                 .cookie(new NewCookie.Builder("authorizationState").maxAge(0).value("").build())
                 .build();
-
     }
+
+    @GET
+    @Path("/endsession")
+    public Response callback(@Context UriInfo info) {
+        return Response.temporaryRedirect(info.getBaseUri().resolve("/"))
+                .cookie(new NewCookie.Builder(ACCESS_TOKEN_COOKIE).path("/").maxAge(0).value("").build())
+                .build();
+    }
+
 
     private DiscoveryDocumentDto getDiscoveryDocumentDto() throws IOException {
         var discoveryApi = new HttpDiscoveryApi(config.getIssuerUrl(), openidJsonb);
