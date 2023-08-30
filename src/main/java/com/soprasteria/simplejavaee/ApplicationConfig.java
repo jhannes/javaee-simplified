@@ -1,6 +1,7 @@
 package com.soprasteria.simplejavaee;
 
 import com.soprasteria.infrastructure.Environment;
+import org.flywaydb.core.Flyway;
 import org.postgresql.ds.PGSimpleDataSource;
 
 import javax.sql.DataSource;
@@ -28,6 +29,7 @@ public class ApplicationConfig {
         dataSource.setURL(environment.get("JDBC_URL", "jdbc:postgresql://localhost:5432/postgres"));
         dataSource.setUser(environment.get("JDBC_USER", "postgres"));
         dataSource.setPassword(environment.get("JDBC_PASSWORD", "postgres"));
+        Flyway.configure().dataSource(dataSource).load().migrate();
         return dataSource;
     }
 }
