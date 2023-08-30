@@ -162,6 +162,7 @@ at https://simplejavaee.test.example.com
 * [x] jib-maven-plugin
     * [x] Kubernetes
 * [x] OpenAPI spec for TODO-list
-* [ ] Frontend-maven-plugin
+* [x] Frontend-maven-plugin
+* [ ] Consume API in frontend
 * [ ] OpenID connect
 * [ ] Fluent JDBC
