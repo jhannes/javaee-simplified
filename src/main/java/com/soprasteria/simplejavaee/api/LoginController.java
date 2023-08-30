@@ -2,7 +2,10 @@ package com.soprasteria.simplejavaee.api;
 
 import com.soprasteria.generated.openid.api.HttpDiscoveryApi;
 import com.soprasteria.generated.openid.api.IdentityProviderApi;
+import com.soprasteria.generated.openid.model.DiscoveryDocumentDto;
+import com.soprasteria.generated.openid.model.GrantTypeDto;
 import com.soprasteria.generated.openid.model.ResponseTypeDto;
+import com.soprasteria.generated.openid.model.TokenResponseDto;
 import com.soprasteria.generated.simplejavaee.model.UserProfileDto;
 import com.soprasteria.infrastructure.JsonbEnumDeserializer;
 import com.soprasteria.simplejavaee.ApplicationConfig;
@@ -12,14 +15,18 @@ import jakarta.json.bind.JsonbBuilder;
 import jakarta.json.bind.JsonbConfig;
 import jakarta.json.bind.config.PropertyNamingStrategy;
 import jakarta.ws.rs.ClientErrorException;
+import jakarta.ws.rs.CookieParam;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
+import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.NewCookie;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.UriInfo;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.UUID;
@@ -42,8 +49,7 @@ public class LoginController {
     @GET
     @Path("/start")
     public Response startLogin(@Context UriInfo info) throws IOException, URISyntaxException {
-        var discoveryApi = new HttpDiscoveryApi(config.getIssuerUrl(), openidJsonb);
-        var discoveryDocument = discoveryApi.getDiscoveryDocument();
+        var discoveryDocument = getDiscoveryDocumentDto();
         var authorizationState = UUID.randomUUID();
 
         var query = new IdentityProviderApi.StartAuthorizationQuery()
@@ -59,4 +65,49 @@ public class LoginController {
                 .cookie(new NewCookie.Builder("authorizationState").value(authorizationState.toString()).build())
                 .build();
     }
+
+    @GET
+    @Path("/callback")
+    public Response callback(
+            @Context UriInfo info,
+            @QueryParam("code") String code, @QueryParam("state") String state, @QueryParam("error") String error,
+            @CookieParam("authorizationState") String expectedState
+    ) throws IOException {
+        if (!state.equals(expectedState)) {
+            throw new ClientErrorException("Invalid state", 400);
+        }
+
+        var discoveryDocumentDto = getDiscoveryDocumentDto();
+        var connection = (HttpURLConnection) discoveryDocumentDto.getTokenEndpoint().toURL().openConnection();
+        connection.setRequestMethod("POST");
+        connection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
+        connection.setDoOutput(true);
+        connection.getOutputStream().write(new IdentityProviderApi.FetchTokenForm()
+                .clientId(config.getOuathClientId())
+                .redirectUri(info.getBaseUri().resolve("/api/login/callback"))
+                .clientSecret(config.getOuathClientSecret())
+                .code(code)
+                .grantType(GrantTypeDto.AUTHORIZATION_CODE)
+                .toUrlEncoded().getBytes()
+        );
+        if (connection.getResponseCode() >= 300) {
+            var response = new ByteArrayOutputStream();
+            connection.getErrorStream().transferTo(response);
+            throw new IOException("Unsuccessful http request " + connection.getResponseCode() + " " + connection.getResponseMessage() + ": " + response);
+        }
+
+        var tokenResponse = openidJsonb.fromJson(connection.getInputStream(), TokenResponseDto.class);
+
+        return Response.temporaryRedirect(info.getBaseUri().resolve("/"))
+                .cookie(new NewCookie.Builder("accessToken").value(tokenResponse.getAccessToken()).build())
+                .cookie(new NewCookie.Builder("authorizationState").maxAge(0).value("").build())
+                .build();
+
+    }
+
+    private DiscoveryDocumentDto getDiscoveryDocumentDto() throws IOException {
+        var discoveryApi = new HttpDiscoveryApi(config.getIssuerUrl(), openidJsonb);
+        return discoveryApi.getDiscoveryDocument();
+    }
+
 }
