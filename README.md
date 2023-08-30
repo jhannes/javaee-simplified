@@ -109,7 +109,7 @@ to avoid storing your passwords in plain text:
 Running the image locally:
 
 `docker login ghcr.io/jhannes`
-`docker run -p 22080:21080 ghcr.io/jhannes/simplejavaee`
+`docker run -p 18080:8080 ghcr.io/jhannes/simplejavaee`
 
 ### Deploying to a Kubernetes cluster
 

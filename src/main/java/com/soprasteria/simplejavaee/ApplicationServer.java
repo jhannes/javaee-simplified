@@ -30,7 +30,7 @@ public class ApplicationServer {
     }
 
     public static void main(String[] args) throws Exception {
-        new ApplicationServer(21080).start();
+        new ApplicationServer(8080).start();
     }
 
     private void start() throws Exception {

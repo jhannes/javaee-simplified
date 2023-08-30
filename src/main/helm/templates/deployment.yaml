@@ -18,7 +18,7 @@ spec:
       - name: {{ .Values.appName }}
         image: "{{ .Values.imageRegistry }}:{{ .Values.imageTag }}"
         ports:
-        - containerPort: 21080
+        - containerPort: 8080
         resources:
           limits:
             cpu: 100m
@@ -29,13 +29,13 @@ spec:
         readinessProbe:
           httpGet:
             path: /
-            port: 21080
+            port: 8080
           initialDelaySeconds: 15
           periodSeconds: 15
         livenessProbe:
           httpGet:
             path: /
-            port: 21080
+            port: 8080
           initialDelaySeconds: 3
           periodSeconds: 30
       imagePullSecrets:
