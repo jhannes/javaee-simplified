@@ -21,7 +21,7 @@ public class ApplicationServer {
         this.server = new Server(port);
 
         var context = new ServletContextHandler();
-        context.addServlet(new ServletHolder(new ServletContainer(new ApplicationApiConfig())), "/api/*");
+        context.addServlet(new ServletHolder(new ServletContainer(new ApplicationApiConfig(new ApplicationConfig()))), "/api/*");
         context.addServlet(new ServletHolder(new WebJarServlet("swagger-ui")), "/api-doc/swagger-ui/*");
         context.addServlet(new ServletHolder(new ContentServlet("webapp")), "/*");
         server.setHandler(context);

@@ -13,7 +13,7 @@ public class ApplicationConfig {
         return environment.get("OAUTH_CLIENT_ID");
     }
 
-    public URL getOpenIdDiscoveryUrl() throws MalformedURLException {
-        return new URL(environment.get("OPENID_DISCOVERY_URI", "https://login.microsoftonline.com/common/v2.0/.well-known"));
+    public URL getIssuerUrl() throws MalformedURLException {
+        return new URL(environment.get("OPENID_ISSUER_URI", "https://login.microsoftonline.com/common/v2.0/"));
     }
 }

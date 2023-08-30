@@ -33,7 +33,7 @@ public class LoginController {
     @GET
     @Path("/start")
     public Response startLogin(@Context UriInfo info) throws IOException, URISyntaxException {
-        var discoveryApi = new HttpDiscoveryApi(config.getOpenIdDiscoveryUrl());
+        var discoveryApi = new HttpDiscoveryApi(config.getIssuerUrl());
         var discoveryDocument = discoveryApi.getDiscoveryDocument();
         var authorizationState = UUID.randomUUID();
 

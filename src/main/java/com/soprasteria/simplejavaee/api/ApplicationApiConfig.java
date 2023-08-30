@@ -1,15 +1,23 @@
 package com.soprasteria.simplejavaee.api;
 
+import com.soprasteria.simplejavaee.ApplicationConfig;
+import org.glassfish.jersey.internal.inject.AbstractBinder;
 import org.glassfish.jersey.server.ResourceConfig;
 
 import java.util.Map;
 
 public class ApplicationApiConfig extends ResourceConfig {
-    public ApplicationApiConfig() {
+    public ApplicationApiConfig(ApplicationConfig applicationConfig) {
         setProperties(Map.of(
                 "jersey.config.server.wadl.disableWadl", true
         ));
         register(LoginController.class);
         register(TodoController.class);
+        register(new AbstractBinder() {
+            @Override
+            protected void configure() {
+                bind(applicationConfig).to(ApplicationConfig.class);
+            }
+        });
     }
 }
