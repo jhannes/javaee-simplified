@@ -158,7 +158,7 @@ If you have set up your hosts file (or DNS) correct, you can now access the appl
 * [x] Serve TODO-list with JAX-RS
 * [x] jib-maven-plugin
   * [x] Kubernetes
-* [ ] OpenAPI spec for TODO-list
+* [x] OpenAPI spec for TODO-list
 * [ ] Frontend-maven-plugin
 * [ ] OpenID connect
 * [ ] Fluent JDBC
