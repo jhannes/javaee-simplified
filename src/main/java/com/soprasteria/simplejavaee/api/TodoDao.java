@@ -4,6 +4,8 @@ import com.soprasteria.generated.simplejavaee.model.TodoDto;
 import org.fluentjdbc.DbContext;
 import org.fluentjdbc.DbContextTable;
 
+import java.util.List;
+
 public class TodoDao {
 
     private final DbContextTable table;
@@ -18,5 +20,14 @@ public class TodoDao {
                 .setField("description", todo.getDescription())
                 .setField("state", todo.getState())
                 .execute();
+    }
+
+    public List<TodoDto> list() {
+        return table.orderedBy("title").list(row -> new TodoDto()
+                .id(row.getUUID("id"))
+                .title(row.getString("title"))
+                .description(row.getString("description"))
+                .state(row.getEnum(TodoDto.StateEnum.class, "state"))
+        );
     }
 }

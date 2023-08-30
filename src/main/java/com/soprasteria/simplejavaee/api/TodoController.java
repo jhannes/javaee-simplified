@@ -26,8 +26,7 @@ public class TodoController {
 
     @GET
     public List<TodoDto> listTodos() throws InterruptedException {
-        Thread.sleep(500);
-        return todoDtos;
+        return todoDao.list();
     }
 
     @POST
