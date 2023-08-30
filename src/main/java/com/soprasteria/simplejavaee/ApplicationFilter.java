@@ -14,6 +14,7 @@ import org.eclipse.jetty.security.DefaultUserIdentity;
 import org.eclipse.jetty.security.UserAuthentication;
 import org.eclipse.jetty.server.Authentication;
 import org.eclipse.jetty.server.Request;
+import org.fluentjdbc.DbContext;
 
 import javax.security.auth.Subject;
 import java.io.IOException;
@@ -24,9 +25,11 @@ import java.util.Set;
 
 public class ApplicationFilter implements Filter {
     private final ApplicationConfig config;
+    private final DbContext dbContext;
 
-    public ApplicationFilter(ApplicationConfig config) {
+    public ApplicationFilter(ApplicationConfig config, DbContext dbContext) {
         this.config = config;
+        this.dbContext = dbContext;
     }
 
     @Override

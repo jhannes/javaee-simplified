@@ -1,13 +1,14 @@
 package com.soprasteria.simplejavaee.api;
 
 import com.soprasteria.simplejavaee.ApplicationConfig;
+import org.fluentjdbc.DbContext;
 import org.glassfish.jersey.internal.inject.AbstractBinder;
 import org.glassfish.jersey.server.ResourceConfig;
 
 import java.util.Map;
 
 public class ApplicationApiConfig extends ResourceConfig {
-    public ApplicationApiConfig(ApplicationConfig applicationConfig) {
+    public ApplicationApiConfig(ApplicationConfig applicationConfig, DbContext dbContext) {
         setProperties(Map.of(
                 "jersey.config.server.wadl.disableWadl", true
         ));
@@ -17,6 +18,7 @@ public class ApplicationApiConfig extends ResourceConfig {
             @Override
             protected void configure() {
                 bind(applicationConfig).to(ApplicationConfig.class);
+                bind(dbContext).to(DbContext.class);
             }
         });
     }

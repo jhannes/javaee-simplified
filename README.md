@@ -165,6 +165,6 @@ at https://simplejavaee.test.example.com
     * [x] Kubernetes
 * [x] OpenAPI spec for TODO-list
 * [x] Frontend-maven-plugin
-* [ ] Consume API in frontend
-* [ ] OpenID connect
+* [x] Consume API in frontend
+* [x] OpenID connect
 * [ ] Fluent JDBC
