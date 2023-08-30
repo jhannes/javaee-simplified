@@ -9,6 +9,7 @@ public class ApplicationApiConfig extends ResourceConfig {
         setProperties(Map.of(
                 "jersey.config.server.wadl.disableWadl", true
         ));
+        register(LoginController.class);
         register(TodoController.class);
     }
 }
