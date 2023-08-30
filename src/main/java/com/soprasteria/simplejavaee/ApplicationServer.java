@@ -1,9 +1,11 @@
 package com.soprasteria.simplejavaee;
 
 import com.soprasteria.infrastructure.ContentServlet;
+import com.soprasteria.simplejavaee.api.ApplicationApiConfig;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
+import org.glassfish.jersey.servlet.ServletContainer;
 
 public class ApplicationServer {
     private final Server server;
@@ -12,6 +14,7 @@ public class ApplicationServer {
         this.server = new Server(port);
 
         var context = new ServletContextHandler();
+        context.addServlet(new ServletHolder(new ServletContainer(new ApplicationApiConfig())), "/api/*");
         context.addServlet(new ServletHolder(new ContentServlet()), "/*");
         server.setHandler(context);
     }
