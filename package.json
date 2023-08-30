@@ -17,6 +17,7 @@
   "devDependencies": {
     "@types/react": "^18.2.21",
     "@types/react-dom": "^18.2.7",
+    "@types/uuid": "^9.0.3",
     "parcel": "^2.9.3",
     "prettier": "^3.0.3",
     "process": "^0.11.10",
@@ -27,6 +28,7 @@
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-promise-suspense": "^0.3.4",
-    "react-router-dom": "^6.15.0"
+    "react-router-dom": "^6.15.0",
+    "uuid": "^9.0.0"
   }
 }
