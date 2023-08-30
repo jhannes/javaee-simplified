@@ -97,11 +97,26 @@
                             <generateApis>false</generateApis>
                         </configuration>
                     </execution>
+                    <execution>
+                        <id>generate-typescript</id>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+                        <configuration>
+                            <generatorName>typescript-fetch-api</generatorName>
+                            <output>target/generated-sources/openapi-typescript</output>
+                        </configuration>
+                    </execution>
                 </executions>
                 <dependencies>
                     <dependency>
                         <groupId>io.github.jhannes.openapi</groupId>
                         <artifactId>openapi-generator-java-annotationfree</artifactId>
+                        <version>0.5.0</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>io.github.jhannes.openapi</groupId>
+                        <artifactId>openapi-generator-typescript-fetch-api</artifactId>
                         <version>0.5.0</version>
                     </dependency>
                 </dependencies>

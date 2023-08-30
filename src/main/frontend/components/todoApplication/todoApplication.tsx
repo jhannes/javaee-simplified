@@ -1,4 +1,4 @@
-import React from "react";
+import React, { Suspense } from "react";
 import { HashRouter, Link, NavLink, Route, Routes } from "react-router-dom";
 import { TodoList } from "./todoList";
 import { NewTodoForm } from "./newTodoForm";
@@ -42,7 +42,9 @@ export function TodoApplication() {
         <NavLink to={"/login"}>User profile</NavLink>
       </nav>
       <main>
-        <TodoRoutes />
+        <Suspense fallback={<h2>Loading</h2>}>
+          <TodoRoutes />
+        </Suspense>
       </main>
       <footer>💚 By Johannes Brodwall @ Sopra Steria</footer>
     </HashRouter>

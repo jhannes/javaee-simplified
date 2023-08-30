@@ -13,7 +13,8 @@ public class TodoController {
     private final SampleModelData sampleModelData = new SampleModelData(-1);
 
     @GET
-    public List<TodoDto> listTodos() {
+    public List<TodoDto> listTodos() throws InterruptedException {
+        Thread.sleep(500);
         return sampleModelData.sampleListOfTodoDto();
     }
 
