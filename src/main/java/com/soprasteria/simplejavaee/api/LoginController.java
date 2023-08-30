@@ -4,8 +4,13 @@ import com.soprasteria.generated.openid.api.HttpDiscoveryApi;
 import com.soprasteria.generated.openid.api.IdentityProviderApi;
 import com.soprasteria.generated.openid.model.ResponseTypeDto;
 import com.soprasteria.generated.simplejavaee.model.UserProfileDto;
+import com.soprasteria.infrastructure.JsonbEnumDeserializer;
 import com.soprasteria.simplejavaee.ApplicationConfig;
 import jakarta.inject.Inject;
+import jakarta.json.bind.Jsonb;
+import jakarta.json.bind.JsonbBuilder;
+import jakarta.json.bind.JsonbConfig;
+import jakarta.json.bind.config.PropertyNamingStrategy;
 import jakarta.ws.rs.ClientErrorException;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
@@ -22,6 +27,10 @@ import java.util.UUID;
 @Path("/login")
 public class LoginController {
 
+    public static final Jsonb openidJsonb = JsonbBuilder.create(new JsonbConfig()
+            .withDeserializers(new JsonbEnumDeserializer())
+            .withPropertyNamingStrategy(PropertyNamingStrategy.LOWER_CASE_WITH_UNDERSCORES)
+    );
     @Inject
     private ApplicationConfig config;
 
@@ -33,7 +42,7 @@ public class LoginController {
     @GET
     @Path("/start")
     public Response startLogin(@Context UriInfo info) throws IOException, URISyntaxException {
-        var discoveryApi = new HttpDiscoveryApi(config.getIssuerUrl());
+        var discoveryApi = new HttpDiscoveryApi(config.getIssuerUrl(), openidJsonb);
         var discoveryDocument = discoveryApi.getDiscoveryDocument();
         var authorizationState = UUID.randomUUID();
 
