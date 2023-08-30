@@ -7,6 +7,32 @@ servers:
   - url: /api
     description: current
 paths:
+  /login:
+    get:
+      tags: [Login]
+      operationId: getUserProfile
+      responses:
+        200:
+          description: Show the current user information
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserProfile"
+        401:
+          description: User is not logged in
+  /login/start:
+    get:
+      tags: [Login]
+      operationId: startLogin
+      responses:
+        307:
+          description: Redirection to identity provider
+          headers:
+            location:
+              description: Idenity provider authorization uri
+              schema:
+                type: string
+                format: uri
   /todos:
     get:
       tags: [Todos]
@@ -53,3 +79,12 @@ components:
         - id
         - title
         - state
+
+    UserProfile:
+      properties:
+        username:
+          type: string
+        displayName:
+          type: string
+      required:
+        - username

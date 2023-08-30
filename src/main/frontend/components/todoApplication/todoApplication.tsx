@@ -2,6 +2,7 @@ import React, { Suspense } from "react";
 import { HashRouter, Link, NavLink, Route, Routes } from "react-router-dom";
 import { TodoList } from "./todoList";
 import { NewTodoForm } from "./newTodoForm";
+import { LoginLink } from "./loginLink";
 
 function FrontPage() {
   return (
@@ -39,7 +40,7 @@ export function TodoApplication() {
       <nav>
         <NavLink to={"/"}>Front page</NavLink>
         <div className={"spacer"}></div>
-        <NavLink to={"/login"}>User profile</NavLink>
+        <LoginLink />
       </nav>
       <main>
         <Suspense fallback={<h2>Loading</h2>}>
