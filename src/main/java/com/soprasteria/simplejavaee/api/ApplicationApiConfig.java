@@ -1,5 +1,6 @@
 package com.soprasteria.simplejavaee.api;
 
+import com.soprasteria.infrastructure.SQLExceptionMapper;
 import com.soprasteria.simplejavaee.ApplicationConfig;
 import org.fluentjdbc.DbContext;
 import org.glassfish.jersey.internal.inject.AbstractBinder;
@@ -14,6 +15,7 @@ public class ApplicationApiConfig extends ResourceConfig {
         ));
         register(LoginController.class);
         register(TodoController.class);
+        register(SQLExceptionMapper.class);
         register(new AbstractBinder() {
             @Override
             protected void configure() {

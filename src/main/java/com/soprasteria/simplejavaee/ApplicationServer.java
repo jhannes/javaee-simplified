@@ -14,6 +14,7 @@ import org.glassfish.jersey.servlet.ServletContainer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.sql.DataSource;
 import java.util.EnumSet;
 
 public class ApplicationServer {
@@ -25,7 +26,9 @@ public class ApplicationServer {
     private final DbContext dbContext = new DbContext();
     private final ApplicationApiConfig apiConfig = new ApplicationApiConfig(applicationConfig, dbContext);
 
-    private final ApplicationFilter applicationFilter = new ApplicationFilter(applicationConfig, dbContext);
+    private final DataSource dataSource = applicationConfig.createDataSource();
+
+    private final ApplicationFilter applicationFilter = new ApplicationFilter(applicationConfig, dbContext, dataSource);
 
     public ApplicationServer(int port) {
         this.server = new Server(port);

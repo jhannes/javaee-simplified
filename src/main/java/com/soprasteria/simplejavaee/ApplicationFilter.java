@@ -17,6 +17,7 @@ import org.eclipse.jetty.server.Request;
 import org.fluentjdbc.DbContext;
 
 import javax.security.auth.Subject;
+import javax.sql.DataSource;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.security.Principal;
@@ -26,16 +27,20 @@ import java.util.Set;
 public class ApplicationFilter implements Filter {
     private final ApplicationConfig config;
     private final DbContext dbContext;
+    private final DataSource dataSource;
 
-    public ApplicationFilter(ApplicationConfig config, DbContext dbContext) {
+    public ApplicationFilter(ApplicationConfig config, DbContext dbContext, DataSource dataSource) {
         this.config = config;
         this.dbContext = dbContext;
+        this.dataSource = dataSource;
     }
 
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
         ((Request)request).setAuthentication(getAuthentication((Request) request));
-        chain.doFilter(request, response);
+        try (var ignored = dbContext.startConnection(dataSource::getConnection)) {
+            chain.doFilter(request, response);
+        }
     }
 
     private Authentication getAuthentication(Request request) {
