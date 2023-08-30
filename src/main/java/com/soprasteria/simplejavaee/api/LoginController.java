@@ -22,6 +22,7 @@ import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.NewCookie;
 import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.SecurityContext;
 import jakarta.ws.rs.core.UriInfo;
 
 import java.io.ByteArrayOutputStream;
@@ -38,12 +39,19 @@ public class LoginController {
             .withDeserializers(new JsonbEnumDeserializer())
             .withPropertyNamingStrategy(PropertyNamingStrategy.LOWER_CASE_WITH_UNDERSCORES)
     );
+    public static final String ACCESS_TOKEN_COOKIE = "accessToken";
     @Inject
     private ApplicationConfig config;
 
+    @Context
+    private SecurityContext securityContext;
+
     @GET
     public UserProfileDto getUserProfile() {
-        throw new ClientErrorException(Response.Status.UNAUTHORIZED);
+        if (securityContext == null || securityContext.getUserPrincipal() == null) {
+            throw new ClientErrorException(Response.Status.UNAUTHORIZED);
+        }
+        return new UserProfileDto().username(securityContext.getUserPrincipal().getName());
     }
 
     @GET
@@ -99,7 +107,7 @@ public class LoginController {
         var tokenResponse = openidJsonb.fromJson(connection.getInputStream(), TokenResponseDto.class);
 
         return Response.temporaryRedirect(info.getBaseUri().resolve("/"))
-                .cookie(new NewCookie.Builder("accessToken").value(tokenResponse.getAccessToken()).build())
+                .cookie(new NewCookie.Builder(ACCESS_TOKEN_COOKIE).value(tokenResponse.getAccessToken()).build())
                 .cookie(new NewCookie.Builder("authorizationState").maxAge(0).value("").build())
                 .build();
 

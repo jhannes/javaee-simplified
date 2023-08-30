@@ -32,8 +32,9 @@ public class Slf4jRequestLog implements RequestLog {
     private static final Logger log = LoggerFactory.getLogger(Slf4jRequestLog.class);
     @Override
     public final void log(Request req, Response resp) {
+        var remoteUser = req.getRemoteUser() != null ? req.getUserPrincipal().getName() : null;
         log.atLevel(getLevel(resp)).addMarker(getMarker(resp))
-                .log("{} {} {}", resp.getStatus(), req.getMethod(), req.getRequestURL());
+                .log("{} {} {} remoteUser={}", resp.getStatus(), req.getMethod(), req.getRequestURL(), remoteUser);
     }
 
     protected Marker getMarker(Response response) {
