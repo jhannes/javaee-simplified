@@ -26,7 +26,7 @@ of a Java application with the least magical technological choices.
   the frontend-maven-plugin, which means a single deployment for
   releases and avoiding cross-origin API requests
 * Implementing authentication with OpenID Connect
-* Implementing database logic and transactions with a the
+* Implementing database logic and transactions with the
   micro-ORM fluent-jdbc
 * Configuration-free logging with MDCs using logevents
 

@@ -1,0 +1,42 @@
+openapi: 3.0.3
+info:
+  title: The task application
+  description: A task list for adding, listing and completing tasks
+  version: 1.0.0
+servers:
+  - url: /api
+    description: current
+paths:
+  /todos:
+    get:
+      tags: [Todos]
+      operationId: listTodos
+      responses:
+        200:
+          description: Show a list of all the tasks available to the current user
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Todo"
+components:
+  schemas:
+    Todo:
+      properties:
+        id:
+          type: string
+          format: uuid
+        title:
+          type: string
+        state:
+          enum:
+            - WAITING
+            - DOING
+            - DONE
+        description:
+          type: string
+      required:
+        - id
+        - title
+        - state
