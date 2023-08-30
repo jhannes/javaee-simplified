@@ -20,6 +20,19 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/Todo"
+    post:
+      tags: [Todos]
+      operationId: createTodo
+      requestBody:
+        description: The task to be created
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Todo"
+      responses:
+        204:
+          description: Task was created
 components:
   schemas:
     Todo:

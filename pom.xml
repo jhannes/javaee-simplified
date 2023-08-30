@@ -141,7 +141,7 @@
                         <goals>
                             <goal>npm</goal>
                         </goals>
-                        <phase>initialize</phase>
+                        <phase>generate-resources</phase>
                         <configuration>
                             <arguments>ci</arguments>
                         </configuration>
