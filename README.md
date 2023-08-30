@@ -15,16 +15,16 @@ of a Java application with the least magical technological choices.
 * Routing requests to controllers using the standard Java EE JAX-RS
   stack. Although this requires a bit more injection magic than I would
   like, this is still provides more control than with other approaches
-* Building a Docker image with jib-maven-plugin, avoiding the need
-  for a boot, assembly or classloading step when building the application
+* Building a Docker image with [jib-maven-plugin](https://github.com/GoogleContainerTools/jib/),
+  avoiding the need for boot, assembly or classloading step when building the application
 * Defining APIs contract-first with OpenAPI generator and serving
   the API documentation with Swagger UI webjar
-  * API spec
-  * Swagger UI
-  * JAX-WS controller
+    * API spec
+    * Swagger UI
+    * JAX-WS controller
 * Serving the front-end code from the same Jetty container using
-  the frontend-maven-plugin, which means a single deployment for
-  releases and avoiding cross-origin API requests
+  the [frontend-maven-plugin](https://github.com/eirslett/frontend-maven-plugin),
+  which means a single deployment for releases and avoiding cross-origin API requests
 * Implementing authentication with OpenID Connect
 * Implementing database logic and transactions with the
   micro-ORM fluent-jdbc
@@ -129,35 +129,38 @@ Zalando Postgres operator as base services in the cluster.
     * [kind](https://kind.sigs.k8s.io/)
 2. Create a cluster on your local machine: `kind create cluster --config src/main/cluster/create-cluster.yaml`
     * `create-cluster.yaml` contains configuration to forward port 80 and 443 on your local machine to this cluster
-    * This configuration includes support for ingress controllers. If you don't need this, you can do `kind create cluster`
+    * This configuration includes support for ingress controllers. If you don't need this, you can
+      do `kind create cluster`
     * The `kind create cluster` command updates `~/.kube/config` to make `kubectl` connect to the new cluster
     * You can see the cluster nodes running with `docker ps`
     * You can see the nodes from the perspective of the cluster with `kubectl get nodes`
 3. Install an Ingress controller (in our case: Nginx):
     * `kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/main/deploy/static/provider/kind/deploy.yaml`
-    * Wait for the pods to start `kubectl wait --namespace ingress-nginx --for=condition=ready pod --selector=app.kubernetes.io/component=controller --timeout=90s`
+    * Wait for the pods to
+      start `kubectl wait --namespace ingress-nginx --for=condition=ready pod --selector=app.kubernetes.io/component=controller --timeout=90s`
 4. Install the postgresql operator: `kubectl apply -k github.com/zalando/postgres-operator/manifests`
 5. Add the following entry to your hosts-file:
    ```
    127.0.0.1 simplejavaee.test.example.com
    ```
 
-
 #### Apply the Kubernetes manifest with your docker file to your cluster
 
 1. Create test namespace: `kubectl create namespace simplejavaee`
-2. Create a pull-token for the namespace: `kubectl --namespace simplejavaee create secret docker-registry pull-secret --docker-username=<appId> --docker-password=<password> --docker-server=ghcr.io/<username>`
-3. Deploy the application: `helm template --set imageRegistry=ghcr.io/<username> src/main/helm | kubectl --namespace simplejavaee apply -f -`
+2. Create a pull-token for the
+   namespace: `kubectl --namespace simplejavaee create secret docker-registry pull-secret --docker-username=<appId> --docker-password=<password> --docker-server=ghcr.io/<username>`
+3. Deploy the
+   application: `helm template --set imageRegistry=ghcr.io/<username> src/main/helm | kubectl --namespace simplejavaee apply -f -`
 
-If you have set up your hosts file (or DNS) correct, you can now access the application at https://simplejavaee.test.example.com
-
+If you have set up your hosts file (or DNS) correct, you can now access the application
+at https://simplejavaee.test.example.com
 
 ## Plan of attack
 
 * [x] Serve simple http requests with Jetty
 * [x] Serve TODO-list with JAX-RS
 * [x] jib-maven-plugin
-  * [x] Kubernetes
+    * [x] Kubernetes
 * [x] OpenAPI spec for TODO-list
 * [ ] Frontend-maven-plugin
 * [ ] OpenID connect

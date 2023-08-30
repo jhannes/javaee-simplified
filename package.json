@@ -2,7 +2,14 @@
   "name": "javaee-without-spring",
   "version": "1.0.0",
   "scripts": {
-    "start": "parcel watch src/main/frontend/index.html --dist-dir target/classes/webapp"
+    "start": "parcel watch src/main/frontend/index.html --dist-dir target/classes/webapp",
+    "build": "npm run check && npm run build:parcel",
+    "build:parcel": "parcel build src/main/frontend/index.html --dist-dir target/classes/webapp",
+    "check": "npm run check:prettier && npm run check:typescript",
+    "check:prettier": "prettier --check src/main/frontend",
+    "check:typescript": "tsc --noEmit",
+    "prettier": "prettier --write src/main/frontend",
+    "clean": "rimraf .parcel-cache target/classes/webapp"
   },
   "keywords": [],
   "author": "",
@@ -11,7 +18,10 @@
     "@types/react": "^18.2.21",
     "@types/react-dom": "^18.2.7",
     "parcel": "^2.9.3",
-    "process": "^0.11.10"
+    "prettier": "^3.0.3",
+    "process": "^0.11.10",
+    "rimraf": "^5.0.1",
+    "typescript": "^5.2.2"
   },
   "dependencies": {
     "react": "^18.2.0",
