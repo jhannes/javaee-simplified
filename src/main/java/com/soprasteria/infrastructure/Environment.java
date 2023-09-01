@@ -8,6 +8,14 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
 
+/**
+ * This class provides a facade to System environment variables, with the following benefits:
+ *
+ * <ul>
+ *     <li>The class can be instantiated with the values you want for testing purposes</li>
+ *     <li>The values can be read from a `.env` environment file</li>
+ * </ul>
+ */
 public class Environment {
 
     private final Map<String, String> environment = new HashMap<>(System.getenv());

@@ -1,9 +1,7 @@
 package com.soprasteria.simplejavaee;
 
-import com.soprasteria.generated.openid.api.HttpDiscoveryApi;
-import com.soprasteria.generated.openid.model.UserinfoDto;
 import com.soprasteria.simplejavaee.api.LoginController;
-import jakarta.json.JsonObject;
+import jakarta.json.Json;
 import jakarta.servlet.Filter;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -20,6 +18,7 @@ import javax.security.auth.Subject;
 import javax.sql.DataSource;
 import java.io.IOException;
 import java.net.HttpURLConnection;
+import java.net.URL;
 import java.security.Principal;
 import java.util.Arrays;
 import java.util.Set;
@@ -67,14 +66,13 @@ public class ApplicationFilter implements Filter {
 
     private Principal getUserPrincipalFromAccessToken(String accessToken) {
         try {
-            var discoveryApi = new HttpDiscoveryApi(config.getIssuerUrl(), LoginController.openidJsonb);
-            var connection = (HttpURLConnection) discoveryApi.getDiscoveryDocument().getUserinfoEndpoint().toURL().openConnection();
+            var discoveryApi = config.getDiscoveryDocumentDto();
+            var connection = (HttpURLConnection) new URL(discoveryApi.getString("userinfo_endpoint")).openConnection();
             connection.setRequestProperty("Authorization", "Bearer " + accessToken);
             if (connection.getResponseCode() >= 300) {
                 throw new IOException("Unsuccessful http request " + connection.getResponseCode() + " " + connection.getResponseMessage());
             }
-            var userInfoRaw = LoginController.openidJsonb.fromJson(connection.getInputStream(), JsonObject.class);
-            var userInfo = LoginController.openidJsonb.fromJson(userInfoRaw.toString(), UserinfoDto.class);
+            var userInfo = Json.createReader(connection.getInputStream()).readObject();
             return new ApplicationUserPrincipal(userInfo);
         } catch (IOException e) {
             throw new RuntimeException(e);

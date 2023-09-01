@@ -1,10 +1,14 @@
 package com.soprasteria.simplejavaee;
 
 import com.soprasteria.infrastructure.Environment;
+import jakarta.json.Json;
+import jakarta.json.JsonObject;
 import org.flywaydb.core.Flyway;
 import org.postgresql.ds.PGSimpleDataSource;
 
 import javax.sql.DataSource;
+import java.io.IOException;
+import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 
@@ -31,5 +35,13 @@ public class ApplicationConfig {
         dataSource.setPassword(environment.get("JDBC_PASSWORD", "postgres"));
         Flyway.configure().dataSource(dataSource).load().migrate();
         return dataSource;
+    }
+
+    public JsonObject getDiscoveryDocumentDto() throws IOException {
+        var connection = (HttpURLConnection) new URL(getIssuerUrl() + "/.well-known/openid-configuration").openConnection();
+        if (connection.getResponseCode() >= 300) {
+            throw new IOException("Unsuccessful http request " + connection.getResponseCode() + " " + connection.getResponseMessage());
+        }
+        return Json.createReader(connection.getInputStream()).readObject();
     }
 }
