@@ -1,18 +1,24 @@
 package com.soprasteria.simplejavaee;
 
-import com.soprasteria.generated.openid.model.UserinfoDto;
+import jakarta.json.JsonObject;
 
 import java.security.Principal;
 
-class ApplicationUserPrincipal implements Principal {
-    private final UserinfoDto userInfo;
+public class ApplicationUserPrincipal implements Principal {
+    private final String name;
+    private final String email;
 
-    public ApplicationUserPrincipal(UserinfoDto userInfo) {
-        this.userInfo = userInfo;
+    public ApplicationUserPrincipal(JsonObject userInfo) {
+        name = userInfo.getString("name");
+        email = userInfo.getString("email");
     }
 
     @Override
     public String getName() {
-        return userInfo.getName();
+        return name;
+    }
+
+    public String getEmail() {
+        return email;
     }
 }

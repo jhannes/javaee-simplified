@@ -8,7 +8,6 @@ import org.eclipse.jetty.http.CompressedContentFormat;
 import org.eclipse.jetty.http.MimeTypes;
 import org.eclipse.jetty.server.CachedContentFactory;
 import org.eclipse.jetty.server.ResourceService;
-import org.eclipse.jetty.util.URIUtil;
 import org.eclipse.jetty.util.resource.PathResource;
 import org.eclipse.jetty.util.resource.Resource;
 import org.eclipse.jetty.util.resource.ResourceCollection;
@@ -46,20 +45,6 @@ public class ContentServlet extends HttpServlet {
 
     public ContentServlet(String path) {
         resourceService.setContentFactory(createContentFactory(path));
-        resourceService.setWelcomeFactory(pathInContext -> URIUtil.addPaths(pathInContext, "index.html"));
-    }
-
-    private CachedContentFactory createContentFactory(String path) {
-        var sourceResource = new DirectoryResource(Path.of("src", "main", "resources", path));
-        var targetResource = DirectoryResource.getClasspathResource(path);
-        if (sourceResource.isDirectory()) {
-            // Development mode
-            var resources = new ResourceCollection(sourceResource, targetResource, new DefaultResource(targetResource));
-            return new CachedContentFactory(null, resources, new MimeTypes(), false, false, new CompressedContentFormat[0]);
-        } else {
-            var resources = new ResourceCollection(targetResource, new DefaultResource(targetResource));
-            return new CachedContentFactory(null, resources, new MimeTypes(), true, false, new CompressedContentFormat[0]);
-        }
     }
 
     @Override
@@ -67,6 +52,16 @@ public class ContentServlet extends HttpServlet {
         if (!resourceService.doGet(req, resp)) {
             resp.sendError(404);
         }
+    }
+
+    private CachedContentFactory createContentFactory(String path) {
+        var sourceResource = new DirectoryResource(Path.of("src", "main", "resources", path));
+        var targetResource = DirectoryResource.getClasspathResource(path);
+        var resources = sourceResource.exists()
+                ? new ResourceCollection(sourceResource, targetResource, new DefaultResource(targetResource))
+                : new ResourceCollection(targetResource, new DefaultResource(targetResource));
+        var useFileMappedBuffer = !sourceResource.exists();
+        return new CachedContentFactory(null, resources, new MimeTypes(), useFileMappedBuffer, false, new CompressedContentFormat[0]);
     }
 
     /**
@@ -125,7 +120,7 @@ public class ContentServlet extends HttpServlet {
 
         @Override
         public Resource addPath(String subPath) throws IOException {
-            if (subPath.endsWith(".ico") || subPath.endsWith(".jpg") || subPath.endsWith(".png")) {
+            if (subPath.startsWith("/api/") || subPath.endsWith(".ico") || subPath.endsWith(".jpg") || subPath.endsWith(".png")) {
                 return targetResource.getResource(subPath);
             }
             return targetResource.getResource("index.html");

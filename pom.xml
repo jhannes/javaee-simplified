@@ -124,21 +124,6 @@
                             <output>target/generated-sources/openapi-typescript</output>
                         </configuration>
                     </execution>
-                    <execution>
-                        <id>generate-java-openid</id>
-                        <goals>
-                            <goal>generate</goal>
-                        </goals>
-                        <configuration>
-                            <generatorName>java-annotationfree</generatorName>
-                            <modelPackage>com.soprasteria.generated.openid.model</modelPackage>
-                            <apiPackage>com.soprasteria.generated.openid.api</apiPackage>
-                            <generateApis>true</generateApis>
-                            <generateApiTests>false</generateApiTests>
-                            <output>target/generated-sources/openid-java</output>
-                            <inputSpec>src/main/resources/openid-configuration.yaml</inputSpec>
-                        </configuration>
-                    </execution>
                 </executions>
                 <dependencies>
                     <dependency>

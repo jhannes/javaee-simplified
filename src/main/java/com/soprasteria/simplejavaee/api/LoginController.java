@@ -1,19 +1,10 @@
 package com.soprasteria.simplejavaee.api;
 
-import com.soprasteria.generated.openid.api.HttpDiscoveryApi;
-import com.soprasteria.generated.openid.api.IdentityProviderApi;
-import com.soprasteria.generated.openid.model.DiscoveryDocumentDto;
-import com.soprasteria.generated.openid.model.GrantTypeDto;
-import com.soprasteria.generated.openid.model.ResponseTypeDto;
-import com.soprasteria.generated.openid.model.TokenResponseDto;
 import com.soprasteria.generated.simplejavaee.model.UserProfileDto;
-import com.soprasteria.infrastructure.JsonbEnumDeserializer;
 import com.soprasteria.simplejavaee.ApplicationConfig;
+import com.soprasteria.simplejavaee.ApplicationUserPrincipal;
 import jakarta.inject.Inject;
-import jakarta.json.bind.Jsonb;
-import jakarta.json.bind.JsonbBuilder;
-import jakarta.json.bind.JsonbConfig;
-import jakarta.json.bind.config.PropertyNamingStrategy;
+import jakarta.json.Json;
 import jakarta.ws.rs.ClientErrorException;
 import jakarta.ws.rs.CookieParam;
 import jakarta.ws.rs.GET;
@@ -30,15 +21,16 @@ import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URL;
+import java.util.List;
 import java.util.UUID;
+
+import static java.net.URLEncoder.encode;
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 @Path("/login")
 public class LoginController {
 
-    public static final Jsonb openidJsonb = JsonbBuilder.create(new JsonbConfig()
-            .withDeserializers(new JsonbEnumDeserializer())
-            .withPropertyNamingStrategy(PropertyNamingStrategy.LOWER_CASE_WITH_UNDERSCORES)
-    );
     public static final String ACCESS_TOKEN_COOKIE = "accessToken";
     @Inject
     private ApplicationConfig config;
@@ -51,25 +43,28 @@ public class LoginController {
         if (securityContext == null || securityContext.getUserPrincipal() == null) {
             throw new ClientErrorException(Response.Status.UNAUTHORIZED);
         }
-        return new UserProfileDto().username(securityContext.getUserPrincipal().getName());
+        var userPrincipal = (ApplicationUserPrincipal) securityContext.getUserPrincipal();
+        return new UserProfileDto()
+                .username(userPrincipal.getName())
+                .emailAddress(userPrincipal.getEmail());
     }
 
     @GET
     @Path("/start")
     public Response startLogin(@Context UriInfo info) throws IOException, URISyntaxException {
-        var discoveryDocument = getDiscoveryDocumentDto();
+        var discoveryDocument = config.getDiscoveryDocumentDto();
         var authorizationState = UUID.randomUUID();
-
-        var query = new IdentityProviderApi.StartAuthorizationQuery()
-                .clientId(config.getOuathClientId())
-                .redirectUri(info.getBaseUri().resolve("/api/login/callback"))
-                .scope("openid email")
-                .state(authorizationState.toString())
-                .responseType(ResponseTypeDto.CODE)
-                .toUrlEncoded();
-        var authorizationUri = new URI(discoveryDocument.getAuthorizationEndpoint() + "?" + query);
-
-        return Response.temporaryRedirect(authorizationUri)
+        var queryParameters = List.of(
+                "client_id=" + encode(config.getOuathClientId(), UTF_8),
+                "redirect_uri=" + encode(info.getBaseUri().resolve("/api/login/callback").toString(), UTF_8),
+                "scope=" + encode("openid email", UTF_8),
+                "state=" + authorizationState,
+                "response_type=code"
+        );
+        var query = String.join("&", queryParameters);
+        var authorizationUri = new URI(discoveryDocument.getString("authorization_endpoint"));
+        return Response
+                .temporaryRedirect(new URI(authorizationUri + "?" + query))
                 .cookie(new NewCookie.Builder("authorizationState").value(authorizationState.toString()).build())
                 .build();
     }
@@ -85,29 +80,28 @@ public class LoginController {
             throw new ClientErrorException("Invalid state", 400);
         }
 
-        var discoveryDocumentDto = getDiscoveryDocumentDto();
-        var connection = (HttpURLConnection) discoveryDocumentDto.getTokenEndpoint().toURL().openConnection();
+        var formParameters = List.of(
+                "client_id=" + encode(config.getOuathClientId(), UTF_8),
+                "client_secret=" + encode(config.getOuathClientSecret(), UTF_8),
+                "redirect_uri=" + encode(info.getBaseUri().resolve("/api/login/callback").toString(), UTF_8),
+                "code=" + encode(code, UTF_8),
+                "grant_type=authorization_code"
+        );
+        var discoveryDocumentDto = config.getDiscoveryDocumentDto();
+        var connection = (HttpURLConnection) new URL(discoveryDocumentDto.getString("token_endpoint")).openConnection();
         connection.setRequestMethod("POST");
         connection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
         connection.setDoOutput(true);
-        connection.getOutputStream().write(new IdentityProviderApi.FetchTokenForm()
-                .clientId(config.getOuathClientId())
-                .redirectUri(info.getBaseUri().resolve("/api/login/callback"))
-                .clientSecret(config.getOuathClientSecret())
-                .code(code)
-                .grantType(GrantTypeDto.AUTHORIZATION_CODE)
-                .toUrlEncoded().getBytes()
-        );
+        connection.getOutputStream().write(String.join("&", formParameters).getBytes());
         if (connection.getResponseCode() >= 300) {
             var response = new ByteArrayOutputStream();
             connection.getErrorStream().transferTo(response);
             throw new IOException("Unsuccessful http request " + connection.getResponseCode() + " " + connection.getResponseMessage() + ": " + response);
         }
-
-        var tokenResponse = openidJsonb.fromJson(connection.getInputStream(), TokenResponseDto.class);
-
+        var tokenResponse = Json.createReader(connection.getInputStream()).readObject();
+        var accessToken = tokenResponse.getString("access_token");
         return Response.temporaryRedirect(info.getBaseUri().resolve("/"))
-                .cookie(new NewCookie.Builder(ACCESS_TOKEN_COOKIE).path("/").value(tokenResponse.getAccessToken()).build())
+                .cookie(new NewCookie.Builder(ACCESS_TOKEN_COOKIE).path("/").value(accessToken).build())
                 .cookie(new NewCookie.Builder("authorizationState").maxAge(0).value("").build())
                 .build();
     }
@@ -119,11 +113,4 @@ public class LoginController {
                 .cookie(new NewCookie.Builder(ACCESS_TOKEN_COOKIE).path("/").maxAge(0).value("").build())
                 .build();
     }
-
-
-    private DiscoveryDocumentDto getDiscoveryDocumentDto() throws IOException {
-        var discoveryApi = new HttpDiscoveryApi(config.getIssuerUrl(), openidJsonb);
-        return discoveryApi.getDiscoveryDocument();
-    }
-
 }
