@@ -25,7 +25,19 @@ public class WebJarServlet extends HttpServlet {
     }
 
     private Resource getWebJarResource(String webjar) {
-        String version;
+        return Resource.newClassPathResource(
+                "/META-INF/resources/webjars/%s/%s".formatted(webjar, findWebjarVersion(webjar)));
+    }
+
+
+    @Override
+    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        if (!resourceService.doGet(req, resp)) {
+            resp.sendError(404);
+        }
+    }
+
+    private String findWebjarVersion(String webjar) {
         var jarPropertiesName = "/META-INF/maven/org.webjars/%s/pom.properties".formatted(webjar);
         try (var inputStream = getClass().getResourceAsStream(jarPropertiesName)) {
             if (inputStream == null) {
@@ -33,17 +45,9 @@ public class WebJarServlet extends HttpServlet {
             }
             var properties = new Properties();
             properties.load(inputStream);
-            version = properties.getProperty("version");
+            return properties.getProperty("version");
         } catch (IOException e) {
             throw new RuntimeException("While loading " + jarPropertiesName, e);
-        }
-        return Resource.newClassPathResource("/META-INF/resources/webjars/%s/%s".formatted(webjar, version));
-    }
-
-    @Override
-    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        if (!resourceService.doGet(req, resp)) {
-            resp.sendError(404);
         }
     }
 }
