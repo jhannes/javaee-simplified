@@ -38,7 +38,7 @@ public class ApplicationServer {
         context.addFilter(new FilterHolder(applicationFilter), "/*", EnumSet.of(DispatcherType.REQUEST));
         context.addServlet(new ServletHolder(new ApiJakartaServlet(List.of(
                 new TodoController(dbContext), new LoginController(applicationConfig)
-        ))), "/apis/*");
+        ))), "/api/*");
         context.addServlet(new ServletHolder(new WebJarServlet("swagger-ui")), "/api-doc/swagger-ui/*");
         context.addServlet(new ServletHolder(new ContentServlet("webapp")), "/*");
         server.setHandler(context);
