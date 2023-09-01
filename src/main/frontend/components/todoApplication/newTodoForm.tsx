@@ -1,8 +1,5 @@
 import React, { FormEvent, useState } from "react";
-import {
-  servers,
-  TodoDto,
-} from "../../../../../target/generated-sources/openapi-typescript";
+import { servers, TodoDto } from "api";
 import { v4 as uuidv4 } from "uuid";
 import { useNavigate } from "react-router-dom";
 

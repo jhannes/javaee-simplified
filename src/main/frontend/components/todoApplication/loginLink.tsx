@@ -1,9 +1,6 @@
 import React, { useEffect, useState } from "react";
-import {
-  servers,
-  UserProfileDto,
-} from "../../../../../target/generated-sources/openapi-typescript";
-import { LoggedOutError } from "../../../../../target/generated-sources/openapi-typescript/base";
+import { servers, UserProfileDto } from "api";
+import { LoggedOutError } from "api/base";
 
 export function LoginLink() {
   const [state, setState] = useState<
