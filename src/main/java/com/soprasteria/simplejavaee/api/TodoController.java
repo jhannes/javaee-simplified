@@ -1,32 +1,29 @@
 package com.soprasteria.simplejavaee.api;
 
 import com.soprasteria.generated.simplejavaee.model.TodoDto;
-import jakarta.inject.Inject;
-import jakarta.ws.rs.GET;
-import jakarta.ws.rs.POST;
-import jakarta.ws.rs.Path;
+import com.soprasteria.simplejavaee.TodoDao;
+import org.actioncontroller.actions.GET;
+import org.actioncontroller.actions.POST;
+import org.actioncontroller.optional.json.Json;
 import org.fluentjdbc.DbContext;
 
 import java.util.List;
 
-@Path("/todos")
 public class TodoController {
+    private final TodoDao dao;
 
-    private final TodoDao todoDao;
-
-    @Inject
     public TodoController(DbContext dbContext) {
-        todoDao = new TodoDao(dbContext);
+        this.dao = new TodoDao(dbContext);
     }
 
-    @GET
+    @GET("/todos")
+    @Json
     public List<TodoDto> listTodos() {
-        return todoDao.list();
+        return dao.list();
     }
 
-    @POST
-    public void createTodo(TodoDto todo) {
-        todoDao.save(todo);
+    @POST("/todos")
+    public void newTodo(@Json TodoDto newTodo) {
+        dao.save(newTodo);
     }
-
 }

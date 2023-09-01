@@ -1,4 +1,4 @@
-package com.soprasteria.simplejavaee.api;
+package com.soprasteria.simplejavaee;
 
 import com.soprasteria.generated.simplejavaee.model.TodoDto;
 import org.fluentjdbc.DbContext;

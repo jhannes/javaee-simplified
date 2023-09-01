@@ -3,19 +3,21 @@ package com.soprasteria.simplejavaee;
 import com.soprasteria.infrastructure.ContentServlet;
 import com.soprasteria.infrastructure.Slf4jRequestLog;
 import com.soprasteria.infrastructure.WebJarServlet;
-import com.soprasteria.simplejavaee.api.ApplicationApiConfig;
+import com.soprasteria.simplejavaee.api.LoginController;
+import com.soprasteria.simplejavaee.api.TodoController;
 import jakarta.servlet.DispatcherType;
+import org.actioncontroller.jakarta.ApiJakartaServlet;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.FilterHolder;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.fluentjdbc.DbContext;
-import org.glassfish.jersey.servlet.ServletContainer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.sql.DataSource;
 import java.util.EnumSet;
+import java.util.List;
 
 public class ApplicationServer {
 
@@ -24,7 +26,6 @@ public class ApplicationServer {
     private final Server server;
     private final ApplicationConfig applicationConfig = new ApplicationConfig();
     private final DbContext dbContext = new DbContext();
-    private final ApplicationApiConfig apiConfig = new ApplicationApiConfig(applicationConfig, dbContext);
 
     private final DataSource dataSource = applicationConfig.createDataSource();
 
@@ -35,7 +36,9 @@ public class ApplicationServer {
 
         var context = new ServletContextHandler();
         context.addFilter(new FilterHolder(applicationFilter), "/*", EnumSet.of(DispatcherType.REQUEST));
-        context.addServlet(new ServletHolder(new ServletContainer(apiConfig)), "/api/*");
+        context.addServlet(new ServletHolder(new ApiJakartaServlet(List.of(
+                new TodoController(dbContext), new LoginController(applicationConfig)
+        ))), "/apis/*");
         context.addServlet(new ServletHolder(new WebJarServlet("swagger-ui")), "/api-doc/swagger-ui/*");
         context.addServlet(new ServletHolder(new ContentServlet("webapp")), "/*");
         server.setHandler(context);

@@ -1,4 +1,4 @@
-package com.soprasteria.simplejavaee.api;
+package com.soprasteria.simplejavaee.api.jaxrs;
 
 import com.soprasteria.infrastructure.SQLExceptionMapper;
 import com.soprasteria.simplejavaee.ApplicationConfig;

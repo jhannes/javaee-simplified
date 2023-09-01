@@ -3,18 +3,14 @@ package com.soprasteria.simplejavaee.api;
 import com.soprasteria.generated.simplejavaee.model.UserProfileDto;
 import com.soprasteria.simplejavaee.ApplicationConfig;
 import com.soprasteria.simplejavaee.ApplicationUserPrincipal;
-import jakarta.inject.Inject;
-import jakarta.json.Json;
-import jakarta.ws.rs.ClientErrorException;
-import jakarta.ws.rs.CookieParam;
-import jakarta.ws.rs.GET;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.QueryParam;
-import jakarta.ws.rs.core.Context;
-import jakarta.ws.rs.core.NewCookie;
-import jakarta.ws.rs.core.Response;
-import jakarta.ws.rs.core.SecurityContext;
-import jakarta.ws.rs.core.UriInfo;
+import org.actioncontroller.actions.GET;
+import org.actioncontroller.exceptions.HttpRequestException;
+import org.actioncontroller.optional.json.Json;
+import org.actioncontroller.values.ContextUrl;
+import org.actioncontroller.values.RequestParam;
+import org.actioncontroller.values.SendRedirect;
+import org.actioncontroller.values.UnencryptedCookie;
+import org.actioncontroller.values.UserPrincipal;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -24,66 +20,65 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.List;
 import java.util.UUID;
+import java.util.function.Consumer;
 
 import static java.net.URLEncoder.encode;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
-@Path("/login")
 public class LoginController {
 
-    public static final String ACCESS_TOKEN_COOKIE = "accessToken";
-    @Inject
-    private ApplicationConfig config;
+    private final ApplicationConfig config;
 
-    @Context
-    private SecurityContext securityContext;
-
-    @GET
-    public UserProfileDto getUserProfile() {
-        if (securityContext == null || securityContext.getUserPrincipal() == null) {
-            throw new ClientErrorException(Response.Status.UNAUTHORIZED);
-        }
-        var userPrincipal = (ApplicationUserPrincipal) securityContext.getUserPrincipal();
-        return new UserProfileDto()
-                .username(userPrincipal.getName())
-                .emailAddress(userPrincipal.getEmail());
+    public LoginController(ApplicationConfig config) {
+        this.config = config;
     }
 
-    @GET
-    @Path("/start")
-    public Response startLogin(@Context UriInfo info) throws IOException, URISyntaxException {
+    @GET("/login")
+    @Json
+    public UserProfileDto getUserProfile(@UserPrincipal ApplicationUserPrincipal principal) {
+        return new UserProfileDto()
+                .username(principal.getName())
+                .emailAddress(principal.getEmail());
+    }
+
+    @GET("/login/start")
+    @SendRedirect
+    public String startLogin(
+            @ContextUrl URL baseUrl,
+            @UnencryptedCookie("expectedState") Consumer<String> setCookie
+    ) throws IOException, URISyntaxException {
         var discoveryDocument = config.getDiscoveryDocumentDto();
-        var authorizationState = UUID.randomUUID();
+        var authorizationEndpoint = new URI(discoveryDocument.getString("authorization_endpoint"));
+
+        var authorizationState = UUID.randomUUID().toString();
+        setCookie.accept(authorizationState);
         var queryParameters = List.of(
                 "client_id=" + encode(config.getOuathClientId(), UTF_8),
-                "redirect_uri=" + encode(info.getBaseUri().resolve("/api/login/callback").toString(), UTF_8),
+                "redirect_uri=" + encode(new URL(baseUrl, "/api/login/callback").toString(), UTF_8),
                 "scope=" + encode("openid email", UTF_8),
                 "state=" + authorizationState,
                 "response_type=code"
         );
-        var query = String.join("&", queryParameters);
-        var authorizationUri = new URI(discoveryDocument.getString("authorization_endpoint"));
-        return Response
-                .temporaryRedirect(new URI(authorizationUri + "?" + query))
-                .cookie(new NewCookie.Builder("authorizationState").value(authorizationState.toString()).build())
-                .build();
+        return authorizationEndpoint + "?" + String.join("&", queryParameters);
     }
 
-    @GET
-    @Path("/callback")
-    public Response callback(
-            @Context UriInfo info,
-            @QueryParam("code") String code, @QueryParam("state") String state, @QueryParam("error") String error,
-            @CookieParam("authorizationState") String expectedState
+    @GET("/login/callback?code")
+    @SendRedirect("/")
+    public void handleCallback(
+            @RequestParam("state") String state,
+            @RequestParam("code") String code,
+            @ContextUrl URL baseUrl,
+            @UnencryptedCookie("expectedState") String expectedState,
+            @UnencryptedCookie("accessToken") Consumer<String> setAccessToken
     ) throws IOException {
-        if (!state.equals(expectedState)) {
-            throw new ClientErrorException("Invalid state", 400);
+        if (!expectedState.equals(state)) {
+            throw new HttpRequestException("Unexpected state");
         }
 
         var formParameters = List.of(
                 "client_id=" + encode(config.getOuathClientId(), UTF_8),
                 "client_secret=" + encode(config.getOuathClientSecret(), UTF_8),
-                "redirect_uri=" + encode(info.getBaseUri().resolve("/api/login/callback").toString(), UTF_8),
+                "redirect_uri=" + encode(new URL(baseUrl, "/api/login/callback").toString(), UTF_8),
                 "code=" + encode(code, UTF_8),
                 "grant_type=authorization_code"
         );
@@ -98,19 +93,14 @@ public class LoginController {
             connection.getErrorStream().transferTo(response);
             throw new IOException("Unsuccessful http request " + connection.getResponseCode() + " " + connection.getResponseMessage() + ": " + response);
         }
-        var tokenResponse = Json.createReader(connection.getInputStream()).readObject();
+        var tokenResponse = jakarta.json.Json.createReader(connection.getInputStream()).readObject();
         var accessToken = tokenResponse.getString("access_token");
-        return Response.temporaryRedirect(info.getBaseUri().resolve("/"))
-                .cookie(new NewCookie.Builder(ACCESS_TOKEN_COOKIE).path("/").value(accessToken).build())
-                .cookie(new NewCookie.Builder("authorizationState").maxAge(0).value("").build())
-                .build();
+        setAccessToken.accept(accessToken);
     }
 
-    @GET
-    @Path("/endsession")
-    public Response callback(@Context UriInfo info) {
-        return Response.temporaryRedirect(info.getBaseUri().resolve("/"))
-                .cookie(new NewCookie.Builder(ACCESS_TOKEN_COOKIE).path("/").maxAge(0).value("").build())
-                .build();
+    @GET("/login/endsession")
+    @SendRedirect("/")
+    public void endSession(@UnencryptedCookie("accessToken") Consumer<String> setAccessToken) {
+        setAccessToken.accept(null);
     }
 }

@@ -1,6 +1,6 @@
 package com.soprasteria.simplejavaee;
 
-import com.soprasteria.simplejavaee.api.LoginController;
+import com.soprasteria.simplejavaee.api.jaxrs.LoginController;
 import jakarta.json.Json;
 import jakarta.servlet.Filter;
 import jakarta.servlet.FilterChain;
@@ -21,6 +21,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.security.Principal;
 import java.util.Arrays;
+import java.util.Optional;
 import java.util.Set;
 
 public class ApplicationFilter implements Filter {
@@ -60,20 +61,23 @@ public class ApplicationFilter implements Filter {
                 .filter(c -> c.getName().equals(LoginController.ACCESS_TOKEN_COOKIE))
                 .findFirst()
                 .map(Cookie::getValue)
-                .map(this::getUserPrincipalFromAccessToken)
+                .flatMap(this::getUserPrincipalFromAccessToken)
                 .orElse(null);
     }
 
-    private Principal getUserPrincipalFromAccessToken(String accessToken) {
+    private Optional<Principal> getUserPrincipalFromAccessToken(String accessToken) {
         try {
             var discoveryApi = config.getDiscoveryDocumentDto();
             var connection = (HttpURLConnection) new URL(discoveryApi.getString("userinfo_endpoint")).openConnection();
             connection.setRequestProperty("Authorization", "Bearer " + accessToken);
+            if (connection.getResponseCode() == 401) {
+                return Optional.empty();
+            }
             if (connection.getResponseCode() >= 300) {
                 throw new IOException("Unsuccessful http request " + connection.getResponseCode() + " " + connection.getResponseMessage());
             }
             var userInfo = Json.createReader(connection.getInputStream()).readObject();
-            return new ApplicationUserPrincipal(userInfo);
+            return Optional.of(new ApplicationUserPrincipal(userInfo));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
