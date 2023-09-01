@@ -1,29 +1,29 @@
 body {
-    margin: 0;
+  margin: 0;
 }
 
 #root {
-    height: 100vh;
-    height: 100dvh;
-    display: grid;
-    grid-template-rows: auto auto 1fr auto;
-    padding: 0 0.5em;
-    background-color: aliceblue;
+  height: 100vh;
+  height: 100dvh;
+  display: grid;
+  grid-template-rows: auto auto 1fr auto;
+  padding: 0 0.5em;
+  background-color: aliceblue;
 }
 
 main {
-    margin: 0.25em auto;
-    min-width: 90%;
-    background-color: white;
-    padding: 0 1em;
-    border-radius: 0.5em;
+  margin: 0.25em auto;
+  min-width: 90%;
+  background-color: white;
+  padding: 0 1em;
+  border-radius: 0.5em;
 }
 
 nav {
-    display: flex;
-    align-content: space-between;
+  display: flex;
+  align-content: space-between;
 }
 
 nav .spacer {
-    flex: 1;
+  flex: 1;
 }

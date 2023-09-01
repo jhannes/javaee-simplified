@@ -1,5 +1,5 @@
 import React, { Suspense } from "react";
-import { HashRouter, Link, NavLink, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Link, NavLink, Route, Routes } from "react-router-dom";
 import { TodoList } from "./todoList";
 import { NewTodoForm } from "./newTodoForm";
 import { LoginLink } from "./loginLink";
@@ -33,7 +33,7 @@ function TodoRoutes() {
 
 export function TodoApplication() {
   return (
-    <HashRouter>
+    <BrowserRouter>
       <header>
         <h1>Task Tracker</h1>
       </header>
@@ -48,6 +48,6 @@ export function TodoApplication() {
         </Suspense>
       </main>
       <footer>💚 By Johannes Brodwall @ Sopra Steria</footer>
-    </HashRouter>
+    </BrowserRouter>
   );
 }
