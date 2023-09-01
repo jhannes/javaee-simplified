@@ -3,7 +3,7 @@ import {
   servers,
   TodoDto,
 } from "../../../../../target/generated-sources/openapi-typescript";
-import usePromise from "react-promise-suspense";
+import { usePromise } from "@mittwald/react-use-promise";
 
 function TodoListing({ todo }: { todo: TodoDto }) {
   return (

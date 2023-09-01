@@ -3,6 +3,7 @@ import { BrowserRouter, Link, NavLink, Route, Routes } from "react-router-dom";
 import { TodoList } from "./todoList";
 import { NewTodoForm } from "./newTodoForm";
 import { LoginLink } from "./loginLink";
+import { ErrorBoundary } from "../errorBoundary/errorBoundary";
 
 function FrontPage() {
   return (
@@ -43,11 +44,34 @@ export function TodoApplication() {
         <LoginLink />
       </nav>
       <main>
-        <Suspense fallback={<h2>Loading</h2>}>
-          <TodoRoutes />
-        </Suspense>
+        <ErrorBoundary
+          onError={(error, reset) => (
+            <ErrorFallback error={error} onClick={reset} />
+          )}
+        >
+          <Suspense fallback={<LoadingFallback />}>
+            <TodoRoutes />
+          </Suspense>
+        </ErrorBoundary>
       </main>
       <footer>💚 By Johannes Brodwall @ Sopra Steria</footer>
     </BrowserRouter>
+  );
+}
+
+function LoadingFallback() {
+  return <h2>Loading</h2>;
+}
+
+function ErrorFallback(props: { error: Error; onClick: () => void }) {
+  const { error, onClick } = props;
+  return (
+    <>
+      <h2>An error occurred</h2>
+      <div>{error.toString()}</div>
+      <div>
+        <button onClick={onClick}>Retry</button>
+      </div>
+    </>
   );
 }

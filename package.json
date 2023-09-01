@@ -25,9 +25,9 @@
     "typescript": "^5.2.2"
   },
   "dependencies": {
+    "@mittwald/react-use-promise": "^1.3.2",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "react-promise-suspense": "^0.3.4",
     "react-router-dom": "^6.15.0",
     "uuid": "^9.0.0"
   }
