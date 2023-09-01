@@ -1,0 +1,18 @@
+apiVersion: acid.zalan.do/v1
+kind: postgresql
+metadata:
+  name: {{ .Values.databaseHostName }}
+  labels:
+    app: {{ .Values.databaseHostName }}
+spec:
+  teamId: simplejavaee
+  volume:
+    size: {{ default "100Mi" .Values.databaseSize }}
+  numberOfInstances: {{ default 2 .Values.databaseReplicas }}
+  postgresql:
+    version: "14"
+  preparedDatabases:
+    todos:
+      defaultUsers: true
+      extensions:
+        postgis: data

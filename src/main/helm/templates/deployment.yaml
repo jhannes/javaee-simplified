@@ -15,28 +15,41 @@ spec:
         app: {{ .Values.appName }}{{ .Values.suffix }}
     spec:
       containers:
-      - name: {{ .Values.appName }}
-        image: "{{ .Values.imageRegistry }}:{{ .Values.imageTag }}"
-        ports:
-        - containerPort: 8080
-        resources:
-          limits:
-            cpu: 100m
-            memory: 512Mi
-          requests:
-            cpu: 100m
-            memory: 128Mi
-        readinessProbe:
-          httpGet:
-            path: /
-            port: 8080
-          initialDelaySeconds: 15
-          periodSeconds: 15
-        livenessProbe:
-          httpGet:
-            path: /
-            port: 8080
-          initialDelaySeconds: 3
-          periodSeconds: 30
+        - name: {{ .Values.appName }}
+          image: "{{ .Values.imageRegistry }}:{{ .Values.imageTag }}"
+          ports:
+            - containerPort: 8080
+          env:
+            - name: JDBC_URL
+              value: jdbc:postgresql://{{ .Values.databaseHostName }}:5432/todos
+            - name: JDBC_USER
+              valueFrom:
+                secretKeyRef:
+                  name: todos-owner-user.simplejavaee-db.credentials.postgresql.acid.zalan.do
+                  key: username
+            - name: JDBC_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: todos-owner-user.simplejavaee-db.credentials.postgresql.acid.zalan.do
+                  key: password
+          resources:
+            limits:
+              cpu: 100m
+              memory: 512Mi
+            requests:
+              cpu: 100m
+              memory: 128Mi
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 8080
+            initialDelaySeconds: 15
+            periodSeconds: 15
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 8080
+            initialDelaySeconds: 3
+            periodSeconds: 30
       imagePullSecrets:
-      -  name: pull-secret
+        - name: pull-secret
