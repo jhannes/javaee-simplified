@@ -18,7 +18,7 @@ public class WebJarServlet extends HttpServlet {
     private final ResourceService resourceService = new ResourceService();
 
     public WebJarServlet(String webjar) {
-        Resource targetResource = getWebJarResource(webjar);
+        var targetResource = getWebJarResource(webjar);
         resourceService.setContentFactory(new CachedContentFactory(null, targetResource, new MimeTypes(), true, false, new CompressedContentFormat[0]));
         resourceService.setWelcomeFactory(pathInContext -> URIUtil.addPaths(pathInContext, "index.html"));
         resourceService.setPathInfoOnly(true);
