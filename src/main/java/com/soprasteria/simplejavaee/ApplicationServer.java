@@ -1,6 +1,7 @@
 package com.soprasteria.simplejavaee;
 
 import com.soprasteria.infrastructure.ContentServlet;
+import com.soprasteria.infrastructure.WebJarServlet;
 import com.soprasteria.simplejavaee.api.TodoController;
 import org.actioncontroller.jakarta.ApiJakartaServlet;
 import org.eclipse.jetty.server.Server;
@@ -21,6 +22,7 @@ public class ApplicationServer {
         context.addServlet(new ServletHolder(new ApiJakartaServlet(
                 new TodoController()
         )), "/api/*");
+        context.addServlet(new ServletHolder(new WebJarServlet("swagger-ui")), "/api-doc/swagger-ui/*");
         context.addServlet(new ServletHolder(new ContentServlet("webapp")), "/*");
         server.setHandler(context);
     }
