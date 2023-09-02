@@ -29,7 +29,9 @@ public class ApplicationServer {
     public ApplicationServer(int port) {
         this.server = new Server(port);
 
-        dataSource.setUser("postgres");
+        dataSource.setURL(System.getenv().getOrDefault("JDBC_URL", "jdbc:postgresql://localhost/postgres"));
+        dataSource.setUser(System.getenv().getOrDefault("JDBC_USER", "postgres"));
+        dataSource.setPassword(System.getenv().getOrDefault("JDBC_PASSWORD", "postgres"));
 
         Flyway.configure().dataSource(dataSource).load().migrate();
 
