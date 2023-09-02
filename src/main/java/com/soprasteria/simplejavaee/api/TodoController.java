@@ -8,9 +8,12 @@ import org.actioncontroller.optional.json.Json;
 import java.util.List;
 
 public class TodoController {
+
+    private final TodoDao todoDao = new TodoDao();
+
     @GET("/todos")
     @Json
     public List<TodoDto> listTodos() {
-        return new SampleModelData(System.currentTimeMillis()).sampleListOfTodoDto();
+        return todoDao.list();
     }
 }
