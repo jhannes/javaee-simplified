@@ -1,5 +1,6 @@
 package com.soprasteria.simplejavaee;
 
+import com.soprasteria.infrastructure.ContentServlet;
 import com.soprasteria.simplejavaee.api.MyLittleServlet;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.DefaultServlet;
@@ -18,9 +19,8 @@ public class ApplicationServer {
         this.server = new Server(port);
 
         var context = new ServletContextHandler();
-        context.setBaseResource(Resource.newClassPathResource("/webapp"));
         context.addServlet(new ServletHolder(new MyLittleServlet()), "/api/*");
-        context.addServlet(new ServletHolder(new DefaultServlet()), "/*");
+        context.addServlet(new ServletHolder(new ContentServlet("webapp")), "/*");
         server.setHandler(context);
     }
 
