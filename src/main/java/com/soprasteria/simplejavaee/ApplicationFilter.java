@@ -13,6 +13,8 @@ import org.eclipse.jetty.security.UserAuthentication;
 import org.eclipse.jetty.server.Authentication;
 import org.eclipse.jetty.server.Request;
 import org.fluentjdbc.DbContext;
+import org.logevents.optional.jakarta.HttpServletRequestMDC;
+import org.slf4j.MDC;
 
 import javax.security.auth.Subject;
 import javax.sql.DataSource;
@@ -37,9 +39,12 @@ public class ApplicationFilter implements Filter {
 
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
-        ((Request)request).setAuthentication(getAuthentication((Request) request));
-        try (var ignored = dbContext.startConnection(dataSource::getConnection)) {
-            chain.doFilter(request, response);
+        MDC.clear();
+        try (var ignored = HttpServletRequestMDC.put(request)) {
+            ((Request)request).setAuthentication(getAuthentication((Request) request));
+            try (var ignored2 = dbContext.startConnection(dataSource::getConnection)) {
+                chain.doFilter(request, response);
+            }
         }
     }
 
