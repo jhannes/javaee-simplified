@@ -29,6 +29,12 @@
             <version>5.4.2</version>
             <scope>runtime</scope>
         </dependency>
+        <dependency>
+            <groupId>org.glassfish</groupId>
+            <artifactId>javax.json</artifactId>
+            <version>1.1.4</version>
+        </dependency>
+
     </dependencies>
 
     <build>
@@ -43,6 +49,34 @@
                     <encoding>UTF-8</encoding>
                 </configuration>
             </plugin>
+            <plugin>
+                <groupId>org.openapitools</groupId>
+                <artifactId>openapi-generator-maven-plugin</artifactId>
+                <version>6.6.0</version>
+                <configuration>
+                    <inputSpec>src/main/resources/webapp/api-doc/todos.yaml</inputSpec>
+                    <generatorName>java-annotationfree</generatorName>
+                    <generateApis>false</generateApis>
+                    <modelNameSuffix>Dto</modelNameSuffix>
+                    <modelPackage>no.soprasteria.generated.simplejavaee.model</modelPackage>
+                </configuration>
+                <executions>
+                    <execution>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <dependencies>
+                    <dependency>
+                        <groupId>io.github.jhannes.openapi</groupId>
+                        <artifactId>openapi-generator-java-annotationfree</artifactId>
+                        <version>0.5.4</version>
+                    </dependency>
+                </dependencies>
+            </plugin>
+
         </plugins>
     </build>
 

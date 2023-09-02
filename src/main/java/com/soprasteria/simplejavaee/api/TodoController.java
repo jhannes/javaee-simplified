@@ -1,14 +1,16 @@
 package com.soprasteria.simplejavaee.api;
 
+import no.soprasteria.generated.simplejavaee.model.SampleModelData;
+import no.soprasteria.generated.simplejavaee.model.TodosGet200ResponseDto;
 import org.actioncontroller.actions.GET;
-import org.actioncontroller.values.ContentBody;
+import org.actioncontroller.optional.json.Json;
+
+import java.util.List;
 
 public class TodoController {
     @GET("/todos")
-    @ContentBody(contentType = "application/json")
-    public String listTodos() {
-        return """
-                ["give talk", "prepare talk"]
-                """;
+    @Json
+    public List<TodosGet200ResponseDto> listTodos() {
+        return new SampleModelData(System.currentTimeMillis()).sampleListOfTodosGet200ResponseDto();
     }
 }
