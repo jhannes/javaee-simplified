@@ -1,0 +1,90 @@
+openapi: 3.0.3
+info:
+  title: The task application
+  description: A task list for adding, listing and completing tasks
+  version: 1.0.0
+servers:
+  - url: /api
+    description: current
+paths:
+  /login:
+    get:
+      tags: [Login]
+      operationId: getUserProfile
+      responses:
+        200:
+          description: Show the current user information
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserProfile"
+        401:
+          description: User is not logged in
+  /login/start:
+    get:
+      tags: [Login]
+      operationId: startLogin
+      responses:
+        307:
+          description: Redirection to identity provider
+          headers:
+            location:
+              description: Idenity provider authorization uri
+              schema:
+                type: string
+                format: uri
+  /todos:
+    get:
+      tags: [Todos]
+      operationId: listTodos
+      responses:
+        200:
+          description: Show a list of all the tasks available to the current user
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Todo"
+    post:
+      tags: [Todos]
+      operationId: createTodo
+      requestBody:
+        description: The task to be created
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Todo"
+      responses:
+        204:
+          description: Task was created
+components:
+  schemas:
+    Todo:
+      properties:
+        id:
+          type: string
+          format: uuid
+        title:
+          type: string
+        state:
+          enum:
+            - WAITING
+            - DOING
+            - DONE
+        description:
+          type: string
+      required:
+        - id
+        - title
+        - state
+
+    UserProfile:
+      properties:
+        username:
+          type: string
+        displayName:
+          type: string
+      required:
+        - username

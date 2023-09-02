@@ -1,0 +1,4 @@
+appName: simplejavaee
+imageRegistry: ghcr.io/jhannes/simplejavaee
+imageTag: latest
+hostname: simplejavaee

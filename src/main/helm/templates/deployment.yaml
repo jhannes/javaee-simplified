@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.appName }}{{ .Values.suffix }}
+  labels:
+    app: {{ .Values.appName }}{{ .Values.suffix }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ .Values.appName }}{{ .Values.suffix }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.appName }}{{ .Values.suffix }}
+    spec:
+      containers:
+      - name: {{ .Values.appName }}
+        image: "{{ .Values.imageRegistry }}:{{ .Values.imageTag }}"
+        ports:
+        - containerPort: 8080
+        resources:
+          limits:
+            cpu: 100m
+            memory: 512Mi
+          requests:
+            cpu: 100m
+            memory: 128Mi
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 8080
+          initialDelaySeconds: 15
+          periodSeconds: 15
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 8080
+          initialDelaySeconds: 3
+          periodSeconds: 30
+      imagePullSecrets:
+      -  name: pull-secret
