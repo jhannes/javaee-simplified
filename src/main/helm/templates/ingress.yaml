@@ -1,0 +1,17 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ .Values.appName }}{{ .Values.suffix }}
+spec:
+  ingressClassName: {{ default "" .Values.ingressClassName }}
+  rules:
+  - host: {{ .Values.hostname }}{{ .Values.suffix }}.{{ default "test.example.com" .Values.domain  }}
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: {{ .Values.appName }}{{ .Values.suffix }}
+            port:
+              number: 80
