@@ -23,5 +23,14 @@
         </plugins>
     </build>
 
+    <properties>
+        <docker.image>
+            ${docker.image.repository}:${docker.image.tag}
+        </docker.image>
+        <docker.image.repository>
+            ${docker.registry}/${project.artifactId}
+        </docker.image.repository>
+        <docker.image.tag>latest</docker.image.tag>
+    </properties>
 
 </project>
