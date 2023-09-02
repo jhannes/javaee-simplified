@@ -1,6 +1,7 @@
 package com.soprasteria.simplejavaee.api.jaxrs;
 
 import com.soprasteria.generated.simplejavaee.model.TodoDto;
+import com.soprasteria.generated.simplejavaee.model.TodoSnapshotDto;
 import com.soprasteria.simplejavaee.TodoDao;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.GET;
@@ -21,13 +22,13 @@ public class TodoController {
     }
 
     @GET
-    public List<TodoDto> listTodos() {
+    public List<TodoSnapshotDto> listTodos() {
         return todoDao.list();
     }
 
     @POST
     public void createTodo(TodoDto todo) {
-        todoDao.save(todo);
+        todoDao.save(todo, null);
     }
 
 }

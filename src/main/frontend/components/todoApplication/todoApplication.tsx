@@ -4,6 +4,7 @@ import { TodoList } from "./todoList";
 import { NewTodoForm } from "./newTodoForm";
 import { LoginLink } from "./loginLink";
 import { ErrorBoundary } from "../errorBoundary/errorBoundary";
+import { UpdateTaskStatus } from "./updateTaskStatus";
 
 function FrontPage() {
   return (
@@ -16,6 +17,9 @@ function FrontPage() {
         <li>
           <Link to={"/todos/new"}>Create new task</Link>
         </li>
+        <li>
+          <Link to={"/todos/update"}>Update task status</Link>
+        </li>
       </ul>
     </>
   );
@@ -27,6 +31,7 @@ function TodoRoutes() {
       <Route path={"/"} element={<FrontPage />} />
       <Route path={"/todos"} element={<TodoList />} />
       <Route path={"/todos/new"} element={<NewTodoForm />} />
+      <Route path={"/todos/update"} element={<UpdateTaskStatus />} />
       <Route path={"*"} element={<h2>Not found</h2>} />
     </Routes>
   );

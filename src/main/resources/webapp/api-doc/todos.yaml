@@ -9,7 +9,7 @@ servers:
 paths:
   /login:
     get:
-      tags: [Login]
+      tags: [ Login ]
       operationId: getUserProfile
       responses:
         200:
@@ -22,7 +22,7 @@ paths:
           description: User is not logged in
   /login/start:
     get:
-      tags: [Login]
+      tags: [ Login ]
       operationId: startLogin
       responses:
         307:
@@ -35,7 +35,7 @@ paths:
                 format: uri
   /todos:
     get:
-      tags: [Todos]
+      tags: [ Todos ]
       operationId: listTodos
       responses:
         200:
@@ -45,9 +45,9 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/Todo"
+                  $ref: "#/components/schemas/TodoSnapshot"
     post:
-      tags: [Todos]
+      tags: [ Todos ]
       operationId: createTodo
       requestBody:
         description: The task to be created
@@ -59,26 +59,86 @@ paths:
       responses:
         204:
           description: Task was created
+  /todos/updateState:
+    post:
+      tags: [Todos]
+      operationId: updateTodoState
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              properties:
+                state:
+                  $ref: "#/components/schemas/TodoState"
+                idList:
+                  type: array
+                  items:
+                    type: string
+                    format: uuid
+              required:
+                - state
+                - idList
+      responses:
+        204:
+          description: Updated
+        403:
+          description: You tried to update a todo that you do not own
+  /todos/{id}:
+    put:
+      tags: [ Todos ]
+      operationId: updateTodo
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TodoProperties"
+      responses:
+        204:
+          description: Update was successful
+        403:
+          description: This is not your task
 components:
   schemas:
-    Todo:
+    TodoProperties:
       properties:
-        id:
-          type: string
-          format: uuid
         title:
           type: string
         state:
-          enum:
-            - WAITING
-            - DOING
-            - DONE
+          $ref: "#/components/schemas/TodoState"
         description:
           type: string
+
+    TodoState:
+      enum:
+        - WAITING
+        - DOING
+        - DONE
+
+    Todo:
+      allOf:
+        - $ref: "#/components/schemas/TodoProperties"
+        - properties:
+            id:
+              type: string
+              format: uuid
       required:
         - id
         - title
         - state
+
+    TodoSnapshot:
+      allOf:
+        - $ref: "#/components/schemas/ChangeTracked"
+        - $ref: "#/components/schemas/Todo"
 
     UserProfile:
       properties:
@@ -91,3 +151,23 @@ components:
           format: email
       required:
         - username
+
+    ChangeTracked:
+      properties:
+        createdBy:
+          type: string
+          format: username
+        createdAt:
+          type: string
+          format: date-time
+        updatedBy:
+          type: string
+          format: username
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+        - createdAt
+        - createdBy
+        - updatedAt
+        - updatedBy

@@ -1,9 +1,9 @@
 import React, { useState } from "react";
-import { servers, TodoDto, TodoDtoStateEnum } from "api";
+import { servers, TodoDto, TodoSnapshotDto, TodoStateDto } from "api";
 import { usePromise } from "@mittwald/react-use-promise";
 import { ModalDialog } from "../modalDialog/modalDialog";
 
-const stateString: Record<TodoDtoStateEnum, string> = {
+const stateString: Record<TodoStateDto, string> = {
   WAITING: "not started",
   DOING: "in progress",
   DONE: "completed",
@@ -13,8 +13,11 @@ function UpdateDescription(props: { todo: TodoDto; onClose: () => void }) {
   const { todo, onClose } = props;
   const [description, setDescription] = useState(todo.description || "");
   async function handleSubmit() {
-    console.log({ id: todo.id, description });
-    throw new Error("Oh noes!");
+    await servers.current.todosApi.updateTodo({
+      pathParams: { id: todo.id },
+      todoPropertiesDto: { description },
+    });
+    onClose();
   }
   return (
     <form onSubmit={handleSubmit} method={"dialog"}>
@@ -35,19 +38,27 @@ function UpdateDescription(props: { todo: TodoDto; onClose: () => void }) {
   );
 }
 
-function TodoListing({ todo }: { todo: TodoDto }) {
+function TodoListing({
+  todo,
+  onRefresh,
+}: {
+  todo: TodoSnapshotDto;
+  onRefresh(): void;
+}) {
   const [updateDescription, setUpdateDescription] = useState(false);
+  function handleClose() {
+    setUpdateDescription(false);
+    onRefresh();
+  }
   return (
     <>
       <h3>
         {todo.title} ({stateString[todo.state]})
       </h3>
+      <h4>Owner: {todo.updatedBy}</h4>
       <div>{todo.description}</div>
       <ModalDialog show={updateDescription}>
-        <UpdateDescription
-          onClose={() => setUpdateDescription(false)}
-          todo={todo}
-        />
+        <UpdateDescription onClose={handleClose} todo={todo} />
       </ModalDialog>
       <div>
         <button onClick={() => setUpdateDescription(true)}>
@@ -59,12 +70,20 @@ function TodoListing({ todo }: { todo: TodoDto }) {
 }
 
 export function TodoList() {
-  const todos = usePromise(() => servers.current.todosApi.listTodos(), []);
+  const [lastLoad, setLastLoad] = useState(new Date());
+  const todos = usePromise(
+    (date) => servers.current.todosApi.listTodos(),
+    [lastLoad],
+  );
   return (
     <>
       <h2>Current tasks</h2>
       {todos.map((todo) => (
-        <TodoListing key={todo.id} todo={todo} />
+        <TodoListing
+          key={todo.id}
+          todo={todo}
+          onRefresh={() => setLastLoad(new Date())}
+        />
       ))}
     </>
   );
