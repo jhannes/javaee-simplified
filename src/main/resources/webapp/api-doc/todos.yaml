@@ -13,11 +13,16 @@ paths:
           content:
             application/json:
               schema:
-                properties:
-                  title:
-                    type: string
-                  state:
-                    enum:
-                      - TODO
-                      - DOING
-                      - DONE
+                $ref: "#/components/schemas/Todo"
+
+components:
+  schemas:
+    Todo:
+      properties:
+        title:
+          type: string
+        state:
+          enum:
+            - TODO
+            - DOING
+            - DONE
