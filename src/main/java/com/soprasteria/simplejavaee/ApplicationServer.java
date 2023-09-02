@@ -6,8 +6,12 @@ import org.eclipse.jetty.servlet.DefaultServlet;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.eclipse.jetty.util.resource.Resource;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ApplicationServer {
+
+    private static final Logger log = LoggerFactory.getLogger(ApplicationServer.class);
     private final Server server;
 
     public ApplicationServer(int port) {
@@ -26,5 +30,6 @@ public class ApplicationServer {
 
     private void start() throws Exception {
         server.start();
+        log.info("Started server http://localhost:{}", server.getURI().getPort());
     }
 }
