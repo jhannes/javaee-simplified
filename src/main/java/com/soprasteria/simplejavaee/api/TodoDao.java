@@ -5,22 +5,29 @@ import org.fluentjdbc.DbContext;
 import org.fluentjdbc.DbContextTable;
 
 import java.util.List;
+import java.util.UUID;
 
 public class TodoDao {
-
-
-    private DbContextTable todos;
+    
+    private final DbContextTable table;
 
     public TodoDao(DbContext dbContext) {
-        todos = dbContext.tableWithTimestamps("todos");
+        table = dbContext.tableWithTimestamps("todos");
     }
 
     public List<TodoDto> list() {
-        return todos
+        return table
                 .orderedBy("updated_at")
                 .list(row -> new TodoDto()
                         .title(row.getString("title"))
                         .state(row.getEnum(TodoDto.StateEnum.class, "state")))
         ;
+    }
+
+    public void save(TodoDto todo) {
+        table.newSaveBuilderWithUUID("id", UUID.randomUUID())
+                .setField("title", todo.getTitle())
+                .setField("state", todo.getState())
+                .execute();
     }
 }

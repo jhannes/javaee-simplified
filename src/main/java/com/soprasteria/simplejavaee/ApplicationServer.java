@@ -3,7 +3,9 @@ package com.soprasteria.simplejavaee;
 import com.soprasteria.infrastructure.ContentServlet;
 import com.soprasteria.infrastructure.WebJarServlet;
 import com.soprasteria.simplejavaee.api.TodoController;
+import com.soprasteria.simplejavaee.api.TodoDao;
 import jakarta.servlet.DispatcherType;
+import no.soprasteria.generated.simplejavaee.model.SampleModelData;
 import org.actioncontroller.jakarta.ApiJakartaServlet;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.FilterHolder;
@@ -47,6 +49,16 @@ public class ApplicationServer {
     }
 
     private void start() throws Exception {
+        try (var ignored = dbContext.startConnection(dataSource)) {
+            var todoDao = new TodoDao(dbContext);
+            if (todoDao.list().isEmpty()) {
+                for (var todo : new SampleModelData(-1).sampleListOfTodoDto()) {
+                    todoDao.save(todo);
+                }
+
+            }
+        }
+
         server.start();
         log.info("Started server http://localhost:{}", server.getURI().getPort());
     }
