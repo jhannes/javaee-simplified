@@ -45,6 +45,11 @@
             <version>42.6.0</version>
         </dependency>
 
+        <dependency>
+            <groupId>org.flywaydb</groupId>
+            <artifactId>flyway-core</artifactId>
+            <version>9.21.0</version>
+        </dependency>
     </dependencies>
 
     <build>

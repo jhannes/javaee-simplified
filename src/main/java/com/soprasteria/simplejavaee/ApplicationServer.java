@@ -10,6 +10,7 @@ import org.eclipse.jetty.servlet.FilterHolder;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.fluentjdbc.DbContext;
+import org.flywaydb.core.Flyway;
 import org.postgresql.ds.PGSimpleDataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,6 +28,8 @@ public class ApplicationServer {
         this.server = new Server(port);
 
         dataSource.setUser("postgres");
+
+        Flyway.configure().dataSource(dataSource).load().migrate();
 
 
         var context = new ServletContextHandler();
