@@ -1,0 +1,23 @@
+openapi: "3.0.2"
+info:
+  title: Task application
+  version: "1.0"
+servers:
+  - url: /api
+paths:
+  /todos:
+    get:
+      responses:
+        '200':
+          description: The current tasks
+          content:
+            application/json:
+              schema:
+                properties:
+                  title:
+                    type: string
+                  state:
+                    enum:
+                      - TODO
+                      - DOING
+                      - DONE
