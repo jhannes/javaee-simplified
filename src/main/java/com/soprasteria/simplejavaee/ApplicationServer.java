@@ -1,12 +1,11 @@
 package com.soprasteria.simplejavaee;
 
 import com.soprasteria.infrastructure.ContentServlet;
-import com.soprasteria.simplejavaee.api.MyLittleServlet;
+import com.soprasteria.simplejavaee.api.TodoController;
+import org.actioncontroller.jakarta.ApiJakartaServlet;
 import org.eclipse.jetty.server.Server;
-import org.eclipse.jetty.servlet.DefaultServlet;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
-import org.eclipse.jetty.util.resource.Resource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -19,7 +18,9 @@ public class ApplicationServer {
         this.server = new Server(port);
 
         var context = new ServletContextHandler();
-        context.addServlet(new ServletHolder(new MyLittleServlet()), "/api/*");
+        context.addServlet(new ServletHolder(new ApiJakartaServlet(
+                new TodoController()
+        )), "/api/*");
         context.addServlet(new ServletHolder(new ContentServlet("webapp")), "/*");
         server.setHandler(context);
     }
