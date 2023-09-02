@@ -10,6 +10,6 @@ import java.io.IOException;
 public class MyLittleServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        resp.getWriter().write("Hello JavaZone");
+        resp.getWriter().write("Hello JavaZone " + req.getPathInfo());
     }
 }
