@@ -7,6 +7,7 @@ import org.actioncontroller.jakarta.ApiJakartaServlet;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
+import org.fluentjdbc.DbContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -14,13 +15,14 @@ public class ApplicationServer {
 
     private static final Logger log = LoggerFactory.getLogger(ApplicationServer.class);
     private final Server server;
+    private DbContext dbContext = new DbContext();
 
     public ApplicationServer(int port) {
         this.server = new Server(port);
 
         var context = new ServletContextHandler();
         context.addServlet(new ServletHolder(new ApiJakartaServlet(
-                new TodoController()
+                new TodoController(dbContext)
         )), "/api/*");
         context.addServlet(new ServletHolder(new WebJarServlet("swagger-ui")), "/api-doc/swagger-ui/*");
         context.addServlet(new ServletHolder(new ContentServlet("webapp")), "/*");
