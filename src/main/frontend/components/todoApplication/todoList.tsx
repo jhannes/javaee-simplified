@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { servers, TodoDto, TodoSnapshotDto, TodoStateDto } from "api";
-import { usePromise } from "@mittwald/react-use-promise";
 import { ModalDialog } from "../modalDialog/modalDialog";
+import { todoListResource } from "./todoListResource";
 
 const stateString: Record<TodoStateDto, string> = {
   WAITING: "not started",
@@ -70,11 +70,8 @@ function TodoListing({
 }
 
 export function TodoList() {
-  const [lastLoad, setLastLoad] = useState(new Date());
-  const todos = usePromise(
-    (date) => servers.current.todosApi.listTodos(),
-    [lastLoad],
-  );
+  const todos = todoListResource.watch();
+
   return (
     <>
       <h2>Current tasks</h2>
@@ -82,7 +79,7 @@ export function TodoList() {
         <TodoListing
           key={todo.id}
           todo={todo}
-          onRefresh={() => setLastLoad(new Date())}
+          onRefresh={() => todoListResource.refresh()}
         />
       ))}
     </>

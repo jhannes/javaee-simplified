@@ -1,14 +1,14 @@
-import { usePromise } from "@mittwald/react-use-promise";
 import { servers, TodoStateDto, TodoStateDtoValues } from "api";
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { todoListResource } from "./todoListResource";
 
 export function UpdateTaskStatus() {
   const [selectedTodos, setSelectedTodos] = useState<Record<string, boolean>>(
     {},
   );
   const [state, setState] = useState<TodoStateDto>("WAITING");
-  const tasks = usePromise(() => servers.current.todosApi.listTodos(), []);
+  const tasks = todoListResource.watch();
   const updateTodoStateRequestDto = {
     state,
     idList: Object.keys(selectedTodos).filter((k) => selectedTodos[k]),
