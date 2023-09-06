@@ -1,0 +1,28 @@
+openapi: "3.0.2"
+info:
+  title: API Title
+  version: "1.0"
+servers:
+  - url: /api
+paths:
+  /todos:
+    get:
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Todo"
+
+components:
+  schemas:
+    Todo:
+      properties:
+        title:
+          type: string
+        status:
+          enum:
+            - TODO
+            - DOING
+            - DONE

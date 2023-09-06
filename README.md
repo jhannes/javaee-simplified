@@ -1,69 +1,60 @@
-Why?
 
-You need to do more! You need to spend more time on the essential complexity and less on accidental complexity.
-
-But what is essential and what is accidental?
-
-A simple example: Leap years and leap seconds are essential. Daylight saving time is accidental
-
-* It's essential that a police system for jailors documents adherence to legal requirements for detainment
-* But it is possible to change laws as well
-* It's accidental which (modern!) programming language you use
-* But what about a responsive web-site or dark mode?
-* What about real-time propagation of events with web sockets and Kafka?
-* What about continuous deployment to a Kubernetes cluster?
-* What about documenting APIs with OpenAPI?
-
-In addition to the essential complexity of the business domain, there is a growing big set of technological expectations from our users and other teams in our organizations. Time spend dealing with a dependencies that won't inject as expected or object that won't map relations as expected is time we won't spend making our users happy.
-
-What you need to do....
-
-* Deploy business logic and assets on Kubernetes
-  * Responding to HTTP requests (Jetty)
-  * Business logic (Servlets)
-  * Static files
-  * Packaging as Docker image (jib-maven-plugin)
-  * Deploying on a Kubernetes cluster
-  * Bonus: Better logging with logevents (*)
-
-* APIs
-  * Implementing REST controllers (Action Controller (*))
-  * Defining OpenAPI spec (spec first)
-  * Serving Swagger-UI from Webjar
-  * Using generated code in the controllers (openapi-generator-plugin (*))
-
-* Frontend bundling
-  * React application
-  * packing into the Docker container (frontend-maven-plugin)
-  * Generating frontend code from OpenAPI spec
-  * BrowserRouter and default resource
-
-* Authentication with OpenID Connect
-  * Configuration with Environment variables
-
-* Implementing database code with a micro ORM
-  * Database migration (Flyway)
-  * Fluent-jdbc (*)
-  * Transactions
+🍂 SPRING? I THINK NOT
 
 
-Very simple.... 😂
+# Out biggest enemy is complexity.
 
-* Serving http content and logic with Jetty
-* Docker with jib-maven-plugin
-* Kubernetes
-* Request routing ActionController (*)
-* OpenAPI with openapi-generator and Swagger UI
-* React with frontend-maven-plugin
-* OpenID Connect
-* Micro ORM
-* Database migrations (Flyway)
-* Configuration
+## With 💚 by Johannes Brodwall (Sopra Steria/Norwegian Police IT unit)
 
-What your application needs to implement:
+Code: https://github.com/jhannes/javaee-simplified
 
-* Build everything (including generated code, frontend) to a Docker container
-* Route requests in an explicit way
-* Document and enforce API contracts
-* Interaction between requests, internal service objects and environment-dependent configuration
-* Data to and from the database
+Everybody wants to create SIMPLE software, but we have too little
+understanding about the nature of COMPLEXITY.
+
+About 40 years ago the book No Silver Bullet described ESSENTIAL
+complexity and ACCIDENTAL complexity. With ACCIDENTAL complexity,
+we have a choice. With ESSENTIAL complexity, we have to deal.
+
+A simple example: Astrophysics dictate the need for LEAP YEARS and
+LEAP SECONDS. But humans decide on the complexity of DAYLIGHT SAVING
+TIME.
+
+We are expected to deliver more complex solutions: Integration,
+single-sign-on, real-time, responsive software that also
+complies with laws regarding privacy. Business is more integrated,
+more complex, more regulated.
+
+We are expected to run our systems on cloud native platforms with
+a complex set of technologies and integrations.
+
+This we cannot choose. But there is a lot we can choose. As
+developers, libraries, frameworks and languages are often within
+out power. We better make use of it.
+
+I want to avoid injections. Spring has great doc, but it doesn't 
+answer my most pressing question: WHY MY CODE NOT WORK???
+
+In this talk, I will show you MY OWN STACK, but hopefully, there
+are a lot of principals that apply to ANY STACK
+
+When delivering software, I wanted to look at how to:
+ 
+1. Respond to HTTP requests with dynamic and static content
+2. Deploy to a Kubernetes cluster
+3. Route incoming requests to respond to an API specification
+4. Document our API
+5. Sign on users (OpenID Connect)
+6. Include front end code in our deployment
+7. Persist data to the database
+8. Using transactions
+9. Configure services
+10. Write useful logs
+
+Not all of this will be covered. What I will do:
+
+* [x] Create a server that responds with dynamic content
+* [x] Include static content
+* [x] Deploy to Kubernetes (including building a Docker image)
+* [x] Document API
+* [x] Implement the documented API
+* [ ] Persist data to database
