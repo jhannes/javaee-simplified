@@ -4,8 +4,10 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.servlet.DefaultServlet;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
+import org.eclipse.jetty.util.resource.Resource;
 
 import java.io.IOException;
 
@@ -14,6 +16,8 @@ public class ApplicationServer {
 
     public ApplicationServer(int port) {
         var context = new ServletContextHandler();
+        context.setBaseResource(Resource.newClassPathResource("webapp"));
+        context.addServlet(new ServletHolder(new DefaultServlet()), "/*");
         context.addServlet(new ServletHolder(new HttpServlet() {
             @Override
             protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
