@@ -59,10 +59,20 @@
                             <goal>generate</goal>
                         </goals>
                         <configuration>
-                            <generatorName>java</generatorName>
+                            <generatorName>java-annotationfree</generatorName>
+                            <apiPackage>com.soprasteria.generated.javaeesimplified.api</apiPackage>
+                            <modelPackage>com.soprasteria.generated.javaeesimplified.model</modelPackage>
+                            <generateApis>false</generateApis>
                         </configuration>
                     </execution>
                 </executions>
+                <dependencies>
+                    <dependency>
+                        <groupId>io.github.jhannes.openapi</groupId>
+                        <artifactId>openapi-generator-java-annotationfree</artifactId>
+                        <version>0.5.4</version>
+                    </dependency>
+                </dependencies>
             </plugin>
         </plugins>
     </build>
