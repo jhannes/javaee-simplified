@@ -9,12 +9,24 @@ paths:
     get:
       operationId: listTasks
       responses:
-        '200':
-          description: OK
+        200:
+          description: Lists all tasks visible to current user
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/Todo"
+  /login:
+    get:
+      operationId: getUserinfo
+      responses:
+        200:
+          description: Shows information about the currently logged in user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Userinfo"
+        401:
+          description: User is not logged in
 
 components:
   schemas:
@@ -30,3 +42,10 @@ components:
       required:
         - title
         - status
+    Userinfo:
+      properties:
+        displayName:
+          type: string
+        uniqueName:
+          type: string
+          format: email
