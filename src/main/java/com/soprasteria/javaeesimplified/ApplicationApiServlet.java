@@ -15,7 +15,7 @@ class ApplicationApiServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         var sampleData = new SampleModelData(-1);
-        var response = sampleData.sampleListOfListTasks200ResponseDto();
+        var response = sampleData.sampleListOfTodoDto();
         resp.setContentType("application/json");
         jsonb.generateNode(response).toJson(resp.getWriter());
     }

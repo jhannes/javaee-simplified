@@ -14,14 +14,19 @@ paths:
           content:
             application/json:
               schema:
-                properties:
-                  title:
-                    type: string
-                  status:
-                    enum:
-                      - TODO
-                      - DOING
-                      - DONE
-                required:
-                  - title
-                  - status
+                $ref: "#/components/schemas/Todo"
+
+components:
+  schemas:
+    Todo:
+      properties:
+        title:
+          type: string
+        status:
+          enum:
+            - TODO
+            - DOING
+            - DONE
+      required:
+        - title
+        - status
