@@ -1,5 +1,7 @@
 package com.soprasteria.javaeesimplified;
 
+import com.soprasteria.generated.javaeesimplified.model.SampleModelData;
+import com.soprasteria.generated.javaeesimplified.model.TodoDto;
 import com.soprasteria.infrastructure.WebJarServlet;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.DefaultServlet;
@@ -9,16 +11,21 @@ import org.eclipse.jetty.util.resource.Resource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.stream.Collectors;
+
 public class ApplicationServer {
     private static final Logger log = LoggerFactory.getLogger(ApplicationServer.class);
     private final Server server;
 
     public ApplicationServer(int port) {
+        var tasks = new SampleModelData(2).sampleList(new SampleModelData(2)::sampleTodoDto, 5, 20)
+                .stream().collect(Collectors.toMap(TodoDto::getId, todo -> todo));
+
         var context = new ServletContextHandler();
         context.setBaseResource(Resource.newClassPathResource("webapp"));
         context.addServlet(new ServletHolder(new DefaultServlet()), "/*");
         context.addServlet(new ServletHolder(new WebJarServlet("swagger-ui")), "/api-doc/swagger-ui/*");
-        context.addServlet(new ServletHolder(new ApplicationApiServlet()), "/api/*");
+        context.addServlet(new ServletHolder(new ApplicationApiServlet(tasks)), "/api/*");
 
         server = new Server(port);
         server.setHandler(context);

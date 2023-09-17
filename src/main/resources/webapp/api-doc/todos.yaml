@@ -34,6 +34,8 @@ paths:
               properties:
                 status:
                   $ref: "#/components/schemas/TaskStatus"
+              required:
+                - status
       responses:
         204:
           description: Task was updated

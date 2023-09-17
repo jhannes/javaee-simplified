@@ -1,6 +1,5 @@
 package com.soprasteria.javaeesimplified;
 
-import com.soprasteria.generated.javaeesimplified.model.SampleModelData;
 import com.soprasteria.generated.javaeesimplified.model.TodoDto;
 import com.soprasteria.generated.javaeesimplified.model.UpdateTaskStatusRequestDto;
 import jakarta.servlet.http.HttpServlet;
@@ -15,30 +14,27 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 class ApplicationApiServlet extends HttpServlet {
 
+    private final TasksController tasksController;
+    private final LoginController loginController = new LoginController();
+
     private final JsonGenerator jsonb = new JsonGenerator();
     private final PojoMapper mapper = new PojoMapper();
-    private final Map<UUID, TodoDto> tasks;
 
-    public ApplicationApiServlet() {
-        var sampleData = new SampleModelData(2);
-        tasks = sampleData.sampleList(sampleData::sampleTodoDto, 5, 20)
-                .stream().collect(Collectors.toMap(TodoDto::getId, todo -> todo));
+    public ApplicationApiServlet(Map<UUID, TodoDto> tasks) {
+        tasksController = new TasksController(tasks);
     }
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         if (req.getPathInfo().equals("/tasks")) {
-            var response = tasks.values();
+            var response = tasksController.listTasks();
             resp.setContentType("application/json");
             jsonb.generateNode(response).toJson(resp.getWriter());
         } else if (req.getPathInfo().equals("/login")) {
-            var sampleData = new SampleModelData(2);
-            var response = sampleData.sampleUserinfoDto()
-                    .displayName(sampleData.randomPersonName());
+            var response = loginController.getUserinfo();
             resp.setContentType("application/json");
             jsonb.generateNode(response).toJson(resp.getWriter());
         }
@@ -52,16 +48,7 @@ class ApplicationApiServlet extends HttpServlet {
             var id = UUID.fromString(matcher.group("id"));
             var requestJson = JsonParser.parse(req.getInputStream());
             var requestBody = (UpdateTaskStatusRequestDto) mapper.mapToPojo(requestJson, UpdateTaskStatusRequestDto.class);
-            var task = tasks.get(id);
-            if (task == null) {
-                resp.sendError(404);
-                return;
-            }
-            if (requestBody.getStatus() == null) {
-                resp.sendError(400);
-                return;
-            }
-            task.setStatus(requestBody.getStatus());
+            tasksController.updateTask(id, requestBody);
             resp.setStatus(204);
         } else {
             resp.sendError(404);
