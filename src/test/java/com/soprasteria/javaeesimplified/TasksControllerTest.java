@@ -9,8 +9,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.postgresql.ds.PGSimpleDataSource;
 
-import java.util.HashMap;
-
 import static org.assertj.core.api.Assertions.assertThat;
 
 class TasksControllerTest {
@@ -33,10 +31,9 @@ class TasksControllerTest {
         dbContextConnection.close();
     }
 
-
     @Test
     void shouldIncludeCreatedTask() {
-        var controller = new TasksController(new TasksDao(new HashMap<>(), dbContext));
+        var controller = new TasksController(dbContext);
         var task = sampleTaskData.sampleTodoDto();
         controller.createTask(task);
         assertThat(controller.listTasks())

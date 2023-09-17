@@ -1,29 +1,28 @@
 package com.soprasteria.javaeesimplified;
 
+import com.soprasteria.generated.javaeesimplified.model.TaskStatusDto;
 import com.soprasteria.generated.javaeesimplified.model.TodoDto;
+import org.fluentjdbc.DatabaseRow;
 import org.fluentjdbc.DbContext;
 import org.fluentjdbc.DbContextTable;
 
+import java.sql.SQLException;
 import java.util.Collection;
-import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
 public class TasksDao {
-    private final Map<UUID, TodoDto> tasks;
     private final DbContextTable table;
 
-    public TasksDao(Map<UUID, TodoDto> tasks, DbContext dbContext) {
-        this.tasks = tasks;
+    public TasksDao(DbContext dbContext) {
         this.table = dbContext.tableWithTimestamps("todos");
     }
 
     public Collection<TodoDto> listAll() {
-        return tasks.values();
+        return table.query().list(TasksDao::readTodo);
     }
 
     public void insert(TodoDto task) {
-        tasks.put(task.getId(), task);
         table.insert()
                 .setPrimaryKey("id", task.getId())
                 .setField("title", task.getTitle())
@@ -32,15 +31,22 @@ public class TasksDao {
     }
 
     public Optional<TodoDto> retrieve(UUID id) {
-        return Optional.ofNullable(tasks.get(id));
+        return table.where("id", id).singleObject(TasksDao::readTodo);
     }
 
     public void update(TodoDto task) {
-        tasks.put(task.getId(), task);
         table.where("id", task.getId())
                 .update()
                 .setField("title", task.getTitle())
                 .setField("status", task.getStatus())
                 .execute();
     }
+
+    private static TodoDto readTodo(DatabaseRow row) throws SQLException {
+        return new TodoDto()
+                .id(row.getUUID("id"))
+                .title(row.getString("title"))
+                .status(row.getEnum(TaskStatusDto.class, "status"));
+    }
+
 }

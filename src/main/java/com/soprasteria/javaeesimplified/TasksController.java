@@ -9,6 +9,7 @@ import org.actioncontroller.exceptions.HttpNotFoundException;
 import org.actioncontroller.exceptions.HttpRequestException;
 import org.actioncontroller.values.PathParam;
 import org.actioncontroller.values.json.JsonBody;
+import org.fluentjdbc.DbContext;
 
 import java.util.Collection;
 import java.util.UUID;
@@ -17,8 +18,8 @@ public class TasksController {
 
     private final TasksDao taskDao;
 
-    public TasksController(TasksDao tasks) {
-        this.taskDao = tasks;
+    public TasksController(DbContext dbContext) {
+        this.taskDao = new TasksDao(dbContext);
     }
 
     @GET("/tasks")
@@ -29,7 +30,7 @@ public class TasksController {
 
 
     @POST("/tasks")
-    public void createTask(TodoDto task) {
+    public void createTask(@JsonBody TodoDto task) {
         if (!task.missingRequiredFields().isEmpty()) {
             throw new HttpRequestException("Missing required fields: " + task.missingRequiredFields());
         }
