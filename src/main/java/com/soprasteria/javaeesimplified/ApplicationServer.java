@@ -1,5 +1,6 @@
 package com.soprasteria.javaeesimplified;
 
+import com.soprasteria.infrastructure.WebJarServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -21,6 +22,7 @@ public class ApplicationServer {
         var context = new ServletContextHandler();
         context.setBaseResource(Resource.newClassPathResource("webapp"));
         context.addServlet(new ServletHolder(new DefaultServlet()), "/*");
+        context.addServlet(new ServletHolder(new WebJarServlet("swagger-ui")), "/api-doc/swagger-ui/*");
         context.addServlet(new ServletHolder(new HttpServlet() {
             @Override
             protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
