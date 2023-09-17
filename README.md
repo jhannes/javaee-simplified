@@ -16,11 +16,15 @@ bonus, it requires less typing than creating typical verbose Java classes.
 To visualize my API, I include the dependency `org.webjars:swagger-ui`. To implement the API, I use my own small web
 framework Action Controller, but you could do the same using JAX-RS or plain Servlets.
 
-## Implementation of API
+## Implementation of API with Action Controller
 
-The least magical way to implement an API is to use servlets. In the following approach, we generate DTOs from the
-OpenAPI spec using openapi-generator-maven-plugin and use a JSON library to map from the DTOs to
-the `HttpServletResponse`
+As the API gets bigger, it can be difficult to get understand the API code littered through the servlet code. Using a
+controller framework can make the API stand out more clearly. In this example, I'm using my own controller framework
+called Action Controller to describe the routing and request/response mapping using annotations.
+
+This example could use JAX-RS and Jersey or even Spring, but in these cases, the controllers are instantiated by the
+framework. This creates the need for a dependency injection framework, which frequently kicks both novice and
+experienced users in the balls. Even so, I use JAX-RS on my current project to avoid depending on self-created code.
 
 ### OpenAPI spec
 
@@ -112,33 +116,4 @@ for openapi-generator with a minimal dependency Java generation.
 
 ### API Servlet
 
-The API servlet contains all the Todos and the functionality to returns and update them. As the servlet is mapped to "
-/api/*", `req.getPathInfo()` will contain whatever is after `/api` in the URL.
-
-```java
-class ApplicationApiServlet extends HttpServlet {
-
-    private final JsonGenerator jsonb = new JsonGenerator();
-    private final Map<UUID, TodoDto> tasks;
-
-    public ApplicationApiServlet() {
-        var sampleData = new SampleModelData(2);
-        tasks = sampleData.sampleList(sampleData::sampleTodoDto, 5, 20)
-                .stream().collect(Collectors.toMap(TodoDto::getId, todo -> todo));
-    }
-
-    @Override
-    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-        if (req.getPathInfo().equals("/tasks")) {
-            var response = tasks.values();
-            resp.setContentType("application/json");
-            jsonb.generateNode(response).toJson(resp.getWriter());
-        } else if (req.getPathInfo().equals("/login")) {
-        }
-    }
-
-    @Override
-    protected void doPut(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-    }
-}
-```
+TODO
