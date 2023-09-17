@@ -20,7 +20,8 @@ framework Action Controller, but you could do the same using JAX-RS or plain Ser
 
 As the API gets bigger, it can be difficult to get understand the API code littered through the servlet code. Using a
 controller framework can make the API stand out more clearly. In this example, I'm using my own controller framework
-called Action Controller to describe the routing and request/response mapping using annotations.
+called [Action Controller](https://github.com/jhannes/action-controller/) to describe the routing and request/response
+mapping using annotations.
 
 This example could use JAX-RS and Jersey or even Spring, but in these cases, the controllers are instantiated by the
 framework. This creates the need for a dependency injection framework, which frequently kicks both novice and
@@ -116,4 +117,52 @@ for openapi-generator with a minimal dependency Java generation.
 
 ### API Servlet
 
-TODO
+Action Controller accepts to its constructor a collection of controller objects. The classes of these objects must have
+one or more methods annotation with and http router mapping. Router mappings are annotations like `@GET`, `@PUT`
+or `@POST`.
+
+```java
+class ApplicationApiServlet extends ApiJakartaServlet {
+
+    public ApplicationApiServlet(Map<UUID, TodoDto> tasks) {
+        super(List.of(new TasksController(tasks), new LoginController()));
+    }
+}
+```
+
+### API controller
+
+ApiJakartaServlet will use the router mapping annotation to route the request to the correct controller action and
+use http parameter mapping and http response mapping annotations to connect request and response values with method
+arguments.
+
+A method can throw a subclass of HttpActionException to return a non-success HTTP status code. 
+
+```java
+public class TasksController {
+
+    private final Map<UUID, TodoDto> tasks;
+
+    public TasksController(Map<UUID, TodoDto> tasks) {
+        this.tasks = tasks;
+    }
+
+    @GET("/tasks")
+    @JsonBody
+    public Collection<TodoDto> listTasks() {
+        return tasks.values();
+    }
+
+    @PUT("/tasks/{id}")
+    public void updateTask(@PathParam("id") UUID id, @JsonBody UpdateTaskStatusRequestDto update) {
+        var task = tasks.get(id);
+        if (task == null) {
+            throw new HttpNotFoundException("No task with id=" + id);
+        }
+        if (!update.missingRequiredFields().isEmpty()) {
+            throw new HttpRequestException("Missing required fields: " + update.missingRequiredFields());
+        }
+        task.setStatus(update.getStatus());
+    }
+}
+```
