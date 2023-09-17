@@ -14,9 +14,16 @@ class ApplicationApiServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-        var sampleData = new SampleModelData(-1);
-        var response = sampleData.sampleListOfTodoDto();
-        resp.setContentType("application/json");
-        jsonb.generateNode(response).toJson(resp.getWriter());
+        var sampleData = new SampleModelData(2);
+        if (req.getPathInfo().equals("/tasks")) {
+            var response = sampleData.sampleListOfTodoDto();
+            resp.setContentType("application/json");
+            jsonb.generateNode(response).toJson(resp.getWriter());
+        } else if (req.getPathInfo().equals("/login")) {
+            var response = sampleData.sampleUserinfoDto()
+                    .displayName(sampleData.randomPersonName());
+            resp.setContentType("application/json");
+            jsonb.generateNode(response).toJson(resp.getWriter());
+        }
     }
 }
