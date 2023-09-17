@@ -63,6 +63,7 @@
                             <apiPackage>com.soprasteria.generated.javaeesimplified.api</apiPackage>
                             <modelPackage>com.soprasteria.generated.javaeesimplified.model</modelPackage>
                             <generateApis>false</generateApis>
+                            <modelNameSuffix>Dto</modelNameSuffix>
                         </configuration>
                     </execution>
                 </executions>

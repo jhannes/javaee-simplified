@@ -1,12 +1,27 @@
 openapi: "3.0.2"
 info:
-  title: API Title
+  title: Task tracker application
   version: "1.0"
 servers:
-  - url: https://api.server.test/v1
+  - url: /api
 paths:
-  /test:
+  /tasks:
     get:
+      operationId: listTasks
       responses:
         '200':
           description: OK
+          content:
+            application/json:
+              schema:
+                properties:
+                  title:
+                    type: string
+                  status:
+                    enum:
+                      - TODO
+                      - DOING
+                      - DONE
+                required:
+                  - title
+                  - status
