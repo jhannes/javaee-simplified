@@ -8,6 +8,7 @@ paths:
   /tasks:
     get:
       operationId: listTasks
+      tags: [ Tasks ]
       responses:
         200:
           description: Lists all tasks visible to current user
@@ -15,9 +16,37 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Todo"
+  /tasks/{id}:
+    put:
+      operationId: updateTaskStatus
+      tags: [ Tasks ]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                status:
+                  $ref: "#/components/schemas/TaskStatus"
+      responses:
+        204:
+          description: Task was updated
+        400:
+          description: Invalid change
+        401:
+          description: Unauthorized user
+        404:
+          description: Non-existent task
   /login:
     get:
       operationId: getUserinfo
+      tags: [ Login ]
       responses:
         200:
           description: Shows information about the currently logged in user
@@ -32,14 +61,15 @@ components:
   schemas:
     Todo:
       properties:
+        id:
+          type: string
+          format: uuid
         title:
           type: string
         status:
-          enum:
-            - TODO
-            - DOING
-            - DONE
+          $ref: "#/components/schemas/TaskStatus"
       required:
+        - id
         - title
         - status
     Userinfo:
@@ -49,3 +79,8 @@ components:
         uniqueName:
           type: string
           format: email
+    TaskStatus:
+      enum:
+        - TODO
+        - DOING
+        - DONE
