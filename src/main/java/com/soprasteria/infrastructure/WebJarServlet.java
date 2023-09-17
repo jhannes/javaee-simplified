@@ -14,21 +14,26 @@ import org.eclipse.jetty.util.resource.Resource;
 import java.io.IOException;
 import java.util.Properties;
 
+/**
+ * Serve static content structured in a <a href="https://www.webjars.org/">webjar</a> format.
+ * A webjar will have its resources located in the classpath under
+ * <code>/META-INF/resources/webjars/<i>artifactId</i>/<i>version</i></code>.
+ * To determine the <code>version</code> at runtime, we read the properties file
+ * <code>/META-INF/maven/org.webjars/<i>artifactId</i>/pom.properties</code>
+ */
 public class WebJarServlet extends HttpServlet {
     private final ResourceService resourceService = new ResourceService();
 
-    public WebJarServlet(String webjar) {
-        var targetResource = getWebJarResource(webjar);
+    public WebJarServlet(String artifactId) {
+        this(artifactId, findWebjarVersion(artifactId));
+    }
+
+    public WebJarServlet(String artifactId, String version) {
+        var targetResource = getWebJarResource(artifactId, version);
         resourceService.setContentFactory(new CachedContentFactory(null, targetResource, new MimeTypes(), true, false, new CompressedContentFormat[0]));
         resourceService.setWelcomeFactory(pathInContext -> URIUtil.addPaths(pathInContext, "index.html"));
         resourceService.setPathInfoOnly(true);
     }
-
-    private Resource getWebJarResource(String webjar) {
-        return Resource.newClassPathResource(
-                "/META-INF/resources/webjars/%s/%s".formatted(webjar, findWebjarVersion(webjar)));
-    }
-
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
@@ -37,9 +42,15 @@ public class WebJarServlet extends HttpServlet {
         }
     }
 
-    private String findWebjarVersion(String webjar) {
-        var jarPropertiesName = "/META-INF/maven/org.webjars/%s/pom.properties".formatted(webjar);
-        try (var inputStream = getClass().getResourceAsStream(jarPropertiesName)) {
+    private Resource getWebJarResource(String artifactId, String version) {
+        return Resource.newClassPathResource(
+                "/META-INF/resources/webjars/%s/%s".formatted(artifactId, version)
+        );
+    }
+
+    private static String findWebjarVersion(String artifactId) {
+        var jarPropertiesName = "/META-INF/maven/org.webjars/%s/pom.properties".formatted(artifactId);
+        try (var inputStream = WebJarServlet.class.getResourceAsStream(jarPropertiesName)) {
             if (inputStream == null) {
                 throw new IllegalArgumentException("Not found " + jarPropertiesName);
             }
