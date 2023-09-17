@@ -5,6 +5,7 @@ import com.soprasteria.generated.javaeesimplified.model.UpdateTaskStatusRequestD
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.actioncontroller.exceptions.HttpActionException;
 import org.jsonbuddy.parse.JsonParser;
 import org.jsonbuddy.pojo.JsonGenerator;
 import org.jsonbuddy.pojo.PojoMapper;
@@ -48,8 +49,12 @@ class ApplicationApiServlet extends HttpServlet {
             var id = UUID.fromString(matcher.group("id"));
             var requestJson = JsonParser.parse(req.getInputStream());
             var requestBody = (UpdateTaskStatusRequestDto) mapper.mapToPojo(requestJson, UpdateTaskStatusRequestDto.class);
-            tasksController.updateTask(id, requestBody);
-            resp.setStatus(204);
+            try {
+                tasksController.updateTask(id, requestBody);
+                resp.setStatus(204);
+            } catch (HttpActionException ex) {
+                resp.sendError(ex.getStatusCode(), ex.getMessage());
+            }
         } else {
             resp.sendError(404);
         }
