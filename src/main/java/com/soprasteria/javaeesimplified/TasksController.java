@@ -11,21 +11,20 @@ import org.actioncontroller.values.PathParam;
 import org.actioncontroller.values.json.JsonBody;
 
 import java.util.Collection;
-import java.util.Map;
 import java.util.UUID;
 
 public class TasksController {
 
-    private final Map<UUID, TodoDto> tasks;
+    private final TasksDao taskDao;
 
-    public TasksController(Map<UUID, TodoDto> tasks) {
-        this.tasks = tasks;
+    public TasksController(TasksDao tasks) {
+        this.taskDao = tasks;
     }
 
     @GET("/tasks")
     @JsonBody
     public Collection<TodoDto> listTasks() {
-        return tasks.values();
+        return taskDao.listAll();
     }
 
 
@@ -34,7 +33,7 @@ public class TasksController {
         if (!task.missingRequiredFields().isEmpty()) {
             throw new HttpRequestException("Missing required fields: " + task.missingRequiredFields());
         }
-        tasks.put(task.getId(), task);
+        taskDao.insert(task);
     }
 
     @PUT("/tasks/{id}")
@@ -42,13 +41,12 @@ public class TasksController {
             @PathParam("id") UUID id,
             @JsonBody UpdateTaskStatusRequestDto update
     ) {
-        var task = tasks.get(id);
-        if (task == null) {
-            throw new HttpNotFoundException("No task with id=" + id);
-        }
         if (!update.missingRequiredFields().isEmpty()) {
             throw new HttpRequestException("Missing required fields: " + update.missingRequiredFields());
         }
+        var task = taskDao.retrieve(id)
+                .orElseThrow(() -> new HttpNotFoundException("No task with id=" + id));
         task.setStatus(update.getStatus());
+        taskDao.update(task);
     }
 }

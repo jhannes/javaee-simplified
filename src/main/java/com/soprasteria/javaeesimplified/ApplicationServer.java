@@ -18,14 +18,14 @@ public class ApplicationServer {
     private final Server server;
 
     public ApplicationServer(int port) {
-        var tasks = new SampleModelData(2).sampleList(new SampleModelData(2)::sampleTodoDto, 5, 20)
-                .stream().collect(Collectors.toMap(TodoDto::getId, todo -> todo));
+        var tasksDao = new TasksDao(new SampleModelData(2).sampleList(new SampleModelData(2)::sampleTodoDto, 5, 20)
+                .stream().collect(Collectors.toMap(TodoDto::getId, todo -> todo)));
 
         var context = new ServletContextHandler();
         context.setBaseResource(Resource.newClassPathResource("webapp"));
         context.addServlet(new ServletHolder(new DefaultServlet()), "/*");
         context.addServlet(new ServletHolder(new WebJarServlet("swagger-ui")), "/api-doc/swagger-ui/*");
-        context.addServlet(new ServletHolder(new ApplicationApiServlet(tasks)), "/api/*");
+        context.addServlet(new ServletHolder(new ApplicationApiServlet(tasksDao)), "/api/*");
 
         server = new Server(port);
         server.setHandler(context);

@@ -13,7 +13,7 @@ class TasksControllerTest {
 
     @Test
     void shouldIncludeCreatedTask() {
-        var controller = new TasksController(new HashMap<>());
+        var controller = new TasksController(new TasksDao(new HashMap<>()));
         var task = sampleTaskData.sampleTodoDto();
         controller.createTask(task);
         assertThat(controller.listTasks())
