@@ -3,6 +3,7 @@ package com.soprasteria.javaeesimplified;
 import com.soprasteria.generated.javaeesimplified.model.TodoDto;
 import com.soprasteria.generated.javaeesimplified.model.UpdateTaskStatusRequestDto;
 import org.actioncontroller.actions.GET;
+import org.actioncontroller.actions.POST;
 import org.actioncontroller.actions.PUT;
 import org.actioncontroller.exceptions.HttpNotFoundException;
 import org.actioncontroller.exceptions.HttpRequestException;
@@ -25,6 +26,15 @@ public class TasksController {
     @JsonBody
     public Collection<TodoDto> listTasks() {
         return tasks.values();
+    }
+
+
+    @POST("/tasks")
+    public void createTask(TodoDto task) {
+        if (!task.missingRequiredFields().isEmpty()) {
+            throw new HttpRequestException("Missing required fields: " + task.missingRequiredFields());
+        }
+        tasks.put(task.getId(), task);
     }
 
     @PUT("/tasks/{id}")

@@ -16,6 +16,18 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Todo"
+    post:
+      operationId: createTask
+      tags: [ Tasks ]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Todo"
+      responses:
+        204:
+          description: Created successfully
   /tasks/{id}:
     put:
       operationId: updateTaskStatus
@@ -28,6 +40,7 @@ paths:
             type: string
             format: uuid
       requestBody:
+        required: true
         content:
           application/json:
             schema:
