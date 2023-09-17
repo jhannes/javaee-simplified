@@ -8,6 +8,7 @@ import org.eclipse.jetty.servlet.DefaultServlet;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.eclipse.jetty.util.resource.Resource;
+import org.fluentjdbc.DbContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -19,7 +20,7 @@ public class ApplicationServer {
 
     public ApplicationServer(int port) {
         var tasksDao = new TasksDao(new SampleModelData(2).sampleList(new SampleModelData(2)::sampleTodoDto, 5, 20)
-                .stream().collect(Collectors.toMap(TodoDto::getId, todo -> todo)));
+                .stream().collect(Collectors.toMap(TodoDto::getId, todo -> todo)), new DbContext());
 
         var context = new ServletContextHandler();
         context.setBaseResource(Resource.newClassPathResource("webapp"));
