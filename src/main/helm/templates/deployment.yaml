@@ -16,10 +16,15 @@ spec:
     spec:
       containers:
         - name: {{ .Values.appName }}
-          image: "{{ .Values.imageRegistry }}:{{ .Values.imageTag }}"
+          image: "{{ .Values.imageRepository }}:{{ .Values.imageTag }}"
           ports:
             - containerPort: 8080
+          envFrom:
+            - secretRef:
+                name: {{ .Values.appName }}
           env:
+            - name: LOGEVENTS_OBSERVER_CONSOLE_FORMATTER
+              value: ConsoleJsonLogEventFormatter
             - name: JDBC_URL
               value: jdbc:postgresql://{{ .Values.databaseHostName }}:5432/todos
             - name: JDBC_USER

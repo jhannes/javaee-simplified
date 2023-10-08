@@ -5,3 +5,5 @@ node_modules
 *.iml
 /node/
 /.env
+*.key
+*.crt

@@ -57,7 +57,7 @@ function TodoListing({
       </h3>
       <h4>Owner: {todo.updatedBy}</h4>
       <div>{todo.description}</div>
-      <ModalDialog show={updateDescription}>
+      <ModalDialog showState={[updateDescription, setUpdateDescription]}>
         <UpdateDescription onClose={handleClose} todo={todo} />
       </ModalDialog>
       <div>

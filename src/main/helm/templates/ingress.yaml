@@ -4,6 +4,10 @@ metadata:
   name: {{ .Values.appName }}{{ .Values.suffix }}
 spec:
   ingressClassName: {{ default "" .Values.ingressClassName }}
+  tls:
+    - hosts:
+        - {{ .Values.hostname }}{{ .Values.suffix }}.{{ default "test.example.com" .Values.domain  }}
+      secretName: tls-secret
   rules:
   - host: {{ .Values.hostname }}{{ .Values.suffix }}.{{ default "test.example.com" .Values.domain  }}
     http:

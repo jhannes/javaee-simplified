@@ -6,12 +6,11 @@ type Props = {
   onError(error: Error, reset: () => void): ReactNode;
 };
 
-export class ErrorBoundary extends React.Component<
-  Props,
-  {
-    error?: Error;
-  }
-> {
+interface State {
+  error?: Error;
+}
+
+export class ErrorBoundary extends React.Component<Props, State> {
   constructor(props: Props) {
     super(props);
     this.state = { error: undefined };

@@ -14,7 +14,7 @@ export function UpdateTaskStatus() {
     idList: Object.keys(selectedTodos).filter((k) => selectedTodos[k]),
   };
 
-  let navigate = useNavigate();
+  const navigate = useNavigate();
 
   async function handleSubmit() {
     await servers.current.todosApi.updateTodoState({

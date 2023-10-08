@@ -1,18 +1,38 @@
-import React, { MutableRefObject, ReactNode, useEffect, useRef } from "react";
+import React, {
+  Dispatch,
+  MutableRefObject,
+  ReactNode,
+  SetStateAction,
+  useEffect,
+  useRef,
+} from "react";
 
-export function ModalDialog(props: { show: boolean; children: ReactNode }) {
+export function ModalDialog(props: {
+  showState: [boolean, Dispatch<SetStateAction<boolean>>];
+  children: ReactNode;
+}) {
+  const {
+    showState: [show, setShow],
+    children,
+  } = props;
   const dialogRef = useRef() as MutableRefObject<HTMLDialogElement>;
+  function handleClose() {
+    setShow(false);
+  }
   useEffect(() => {
-    if (props.show) {
+    if (show) {
       dialogRef.current?.showModal();
     } else {
       dialogRef.current?.close();
     }
-    return () => dialogRef.current?.close();
-  }, [props.show]);
+  }, [show]);
+  useEffect(() => {
+    dialogRef.current?.addEventListener("close", handleClose);
+    return () => dialogRef.current?.removeEventListener("close", handleClose);
+  }, []);
   return (
     <dialog ref={dialogRef}>
-      <div>{props.children}</div>
+      <div>{children}</div>
     </dialog>
   );
 }

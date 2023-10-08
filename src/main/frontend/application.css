@@ -27,3 +27,9 @@ nav {
 nav .spacer {
   flex: 1;
 }
+
+.errorMessage {
+  display: inline-block;
+  padding: 0.4em;
+  border: 2px solid red;
+}

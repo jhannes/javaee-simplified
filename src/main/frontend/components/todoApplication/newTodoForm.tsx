@@ -9,14 +9,21 @@ export function NewTodoForm() {
     state: "WAITING",
     id: uuidv4(),
   });
+  const [error, setError] = useState<Error>();
   const navigate = useNavigate();
+
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    await servers.current.todosApi.createTodo({
-      todoDto,
-    });
-    navigate("/todos");
+    try {
+      await servers.current.todosApi.createTodo({
+        todoDto,
+      });
+      navigate("/todos");
+    } catch (e) {
+      setError(e as Error);
+    }
   }
+
   return (
     <form onSubmit={handleSubmit}>
       <h2>Add new task</h2>
@@ -35,6 +42,11 @@ export function NewTodoForm() {
           />
         </label>
       </div>
+      {error && (
+        <div>
+          <div className={"errorMessage"}>Error: {error.message}</div>
+        </div>
+      )}
       <div>
         <button>Submit</button>
       </div>
