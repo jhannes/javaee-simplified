@@ -21,8 +21,8 @@ import java.nio.file.Path;
  * benefits:
  * <ul>
  *     <li>
- *         The path to the assets are specified in the constructor instead of through an
- *         arbitrary servlet init variables
+ *         The path to the assets are specified in the constructor instead of through
+ *         servlet init variables
  *     </li>
  *     <li>
  *         If the src/main/resources is visible in the current path, this servlet enters
@@ -59,17 +59,22 @@ public class ContentServlet extends HttpServlet {
                 ? new ResourceCollection(sourceResource, targetResource)
                 : targetResource;
         var resources = withDefaultResource(resourceCollection, "/index.html");
+        // On Windows, Jetty lock file mapped buffer resources, preventing changes without restart
         var useFileMappedBuffer = !sourceResource.exists();
         return new CachedContentFactory(null, resources, new MimeTypes(), useFileMappedBuffer, false, new CompressedContentFormat[0]);
     }
 
-    private static ResourceFactory withDefaultResource(Resource delegate, String defaultResourcePath) {
+    /**
+     * Decorator on top of a ResourceFactory that returns a default resource when no match. Useful
+     * with client side browser routing.
+     */
+    private static ResourceFactory withDefaultResource(ResourceFactory delegate, String defaultResourcePath) {
         return path -> {
             var resource = delegate.getResource(path);
             if (resource.exists()) {
                 return resource;
             }
-            if (path.startsWith("/api/") || path.endsWith(".ico") || path.endsWith(".jpg") || path.endsWith(".png")) {
+            if (path.endsWith(".ico") || path.endsWith(".jpg") || path.endsWith(".png")) {
                 return resource;
             }
             return delegate.getResource(defaultResourcePath);

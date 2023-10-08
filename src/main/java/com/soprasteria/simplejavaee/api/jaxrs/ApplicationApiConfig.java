@@ -1,6 +1,5 @@
 package com.soprasteria.simplejavaee.api.jaxrs;
 
-import com.soprasteria.infrastructure.SQLExceptionMapper;
 import com.soprasteria.simplejavaee.ApplicationConfig;
 import org.fluentjdbc.DbContext;
 import org.glassfish.jersey.internal.inject.AbstractBinder;

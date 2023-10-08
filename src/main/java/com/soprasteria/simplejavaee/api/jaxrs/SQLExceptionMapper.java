@@ -1,4 +1,4 @@
-package com.soprasteria.infrastructure;
+package com.soprasteria.simplejavaee.api.jaxrs;
 
 import jakarta.json.Json;
 import jakarta.ws.rs.core.Response;

@@ -18,19 +18,15 @@ import java.util.Properties;
  */
 public class Environment {
 
-    private final Map<String, String> environment = new HashMap<>(System.getenv());
+    private final Map<String, String> environment;
 
     public Environment() {
-        var dotenv = Path.of(".env");
-        if (Files.isRegularFile(dotenv)) {
-            try (var inputStream = Files.newInputStream(dotenv)) {
-                var properties = new Properties();
-                properties.load(inputStream);
-                properties.forEach((key, value) -> environment.put(key.toString(), value.toString()));
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        }
+        environment = new HashMap<>(System.getenv());
+        environment.putAll(readVariablesFromFile(Path.of(".env")));
+    }
+
+    public Environment(Map<String, String> environment) {
+        this.environment = environment;
     }
 
     public String get(String key) {
@@ -43,5 +39,19 @@ public class Environment {
 
     public String get(String key, String defaultValue) {
         return optional(key).orElse(defaultValue);
+    }
+
+    private static HashMap<String, String> readVariablesFromFile(Path file) {
+        var variables = new HashMap<String, String>();
+        if (Files.isRegularFile(file)) {
+            try (var inputStream = Files.newInputStream(file)) {
+                var properties = new Properties();
+                properties.load(inputStream);
+                properties.forEach((key, value) -> variables.put(key.toString(), value.toString()));
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        return variables;
     }
 }

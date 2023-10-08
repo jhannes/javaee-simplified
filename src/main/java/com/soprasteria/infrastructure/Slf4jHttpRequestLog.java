@@ -8,11 +8,23 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.event.Level;
 
+import java.util.Set;
+
 import static org.logevents.optional.jakarta.HttpServletResponseMDC.getMarker;
 
-public class Slf4jRequestLog implements RequestLog {
+/**
+ * Logs requests in Jetty to SLF4J using helpers from <a href="https://logevents.org">Logevents</a>
+ * to set request and response properties on the MDC. This doesn't require logevents as your
+ * slf4j implementation, but if you're using Logevents and logging with JSON, the events
+ * will adhere to the
+ * <a href="https://www.elastic.co/guide/en/ecs/current/index.html">Elastic Common Schema</a> specification.
+ */
+public class Slf4jHttpRequestLog implements RequestLog {
 
-    private static final Logger log = LoggerFactory.getLogger(Slf4jRequestLog.class);
+    private static final Logger log = LoggerFactory.getLogger(Slf4jHttpRequestLog.class);
+
+    private static final Set<Integer> REDIRECT_STATUS_CODES = Set.of(301, 302, 303, 307, 308);
+
     @Override
     public final void log(Request req, Response resp) {
         try (var ignored = HttpServletMDC.put(req, resp)) {
@@ -21,8 +33,8 @@ public class Slf4jRequestLog implements RequestLog {
         }
     }
 
-    protected static boolean isRedirect(int status) {
-        return status == 301 || status == 302 || status == 303 || status == 307 || status == 308;
+    protected static boolean isRedirect(int statusCode) {
+        return REDIRECT_STATUS_CODES.contains(statusCode);
     }
 
     protected Level getLevel(Response response) {

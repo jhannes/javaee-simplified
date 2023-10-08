@@ -1,7 +1,7 @@
 package com.soprasteria.simplejavaee;
 
 import com.soprasteria.infrastructure.ContentServlet;
-import com.soprasteria.infrastructure.Slf4jRequestLog;
+import com.soprasteria.infrastructure.Slf4jHttpRequestLog;
 import com.soprasteria.infrastructure.WebJarServlet;
 import com.soprasteria.simplejavaee.api.LoginController;
 import com.soprasteria.simplejavaee.api.TodoController;
@@ -43,7 +43,7 @@ public class ApplicationServer {
         context.addServlet(new ServletHolder(new ContentServlet("webapp")), "/*");
         server.setHandler(context);
 
-        server.setRequestLog(new Slf4jRequestLog());
+        server.setRequestLog(new Slf4jHttpRequestLog());
     }
 
     public static void main(String[] args) throws Exception {

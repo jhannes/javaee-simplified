@@ -26,6 +26,15 @@ import java.util.Arrays;
 import java.util.Optional;
 import java.util.Set;
 
+/**
+ * Sets up the slf4j MDC with request values and populates the request with the current user
+ * principal (if any). This uses MDC helpers from
+ * <a href="https://logevents.org">Logevents</a>. This doesn't require logevents as your
+ * slf4j implementation, but if you're using Logevents and logging with JSON, the events
+ * will adhere to the
+ * <a href="https://www.elastic.co/guide/en/ecs/current/index.html">Elastic Common Schema</a>
+ * specification.
+ */
 public class ApplicationFilter implements Filter {
     private final ApplicationConfig config;
     private final DbContext dbContext;
@@ -40,8 +49,10 @@ public class ApplicationFilter implements Filter {
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
         MDC.clear();
+        // Set up MDC variables in case `getAuthentication` throws an exception
+        HttpServletRequestMDC.put(request);
+        ((Request) request).setAuthentication(getAuthentication((Request) request));
         try (var ignored = HttpServletRequestMDC.put(request)) {
-            ((Request)request).setAuthentication(getAuthentication((Request) request));
             try (var ignored2 = dbContext.startConnection(dataSource::getConnection)) {
                 chain.doFilter(request, response);
             }
@@ -49,24 +60,9 @@ public class ApplicationFilter implements Filter {
     }
 
     private Authentication getAuthentication(Request request) {
-        var principal = getUserPrincipal(request);
-        if (principal == null) {
-            return null;
-        }
-        return new UserAuthentication("accessToken",
-                new DefaultUserIdentity(new Subject(false, Set.of(principal), Set.of(), Set.of()), principal, new String[0])
-        );
-    }
-
-    private Principal getUserPrincipal(Request request) {
-        if (request.getCookies() == null) {
-            return null;
-        }
-        return Arrays.stream(request.getCookies())
-                .filter(c -> c.getName().equals(LoginController.ACCESS_TOKEN_COOKIE))
-                .findFirst()
-                .map(Cookie::getValue)
+        return getCookie(request, LoginController.ACCESS_TOKEN_COOKIE)
                 .flatMap(this::getUserPrincipalFromAccessToken)
+                .map(this::createAuthentication)
                 .orElse(null);
     }
 
@@ -79,13 +75,29 @@ public class ApplicationFilter implements Filter {
                 return Optional.empty();
             }
             if (connection.getResponseCode() >= 300) {
-                throw new IOException("Unsuccessful http request " + connection.getResponseCode() + " " + connection.getResponseMessage());
+                throw new RuntimeException("Unsuccessful http request " + connection.getResponseCode() + " " + connection.getResponseMessage());
             }
             var userInfo = Json.createReader(connection.getInputStream()).readObject();
             return Optional.of(new ApplicationUserPrincipal(userInfo));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private UserAuthentication createAuthentication(Principal userPrincipal) {
+        return new UserAuthentication("accessToken",
+                new DefaultUserIdentity(new Subject(false, Set.of(userPrincipal), Set.of(), Set.of()), userPrincipal, new String[0])
+        );
+    }
+
+    private static Optional<String> getCookie(Request request, String cookieName) {
+        if (request.getCookies() == null) {
+            return Optional.empty();
+        }
+        return Arrays.stream(request.getCookies())
+                .filter(c -> c.getName().equals(cookieName))
+                .findFirst()
+                .map(Cookie::getValue);
     }
 
 }
