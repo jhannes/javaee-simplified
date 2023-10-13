@@ -1,2 +1,4 @@
 /.env
 /simplejavaee.iml
+.idea
+target

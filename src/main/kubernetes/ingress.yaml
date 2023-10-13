@@ -1,0 +1,16 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: javaee-devmeetup-ingress
+spec:
+  rules:
+    - host: simplejavaee.test.example.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: javaee-devmeetup-service
+                port:
+                  number: 80

@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: javaee-devmeetup
+  labels:
+    app: javaee-devmeetup
+    tier: frontend
+    author: johannes
+    foo: bar
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: javaee-devmeetup
+  template:
+    metadata:
+      labels:
+        app: javaee-devmeetup
+    spec:
+      containers:
+        - name: javaee-devmeetup
+          image: ghcr.io/jhannes/javaee-devmeetup:1.0.12
+          ports:
+            - containerPort: 11080
+          env:
+            - name: LOGEVENTS_OBSERVER_CONSOLE_FORMATTER
+              value: ConsoleJsonLogEventFormatter
+          resources:
+            limits:
+              cpu: 100m
+              memory: 512Mi
+            requests:
+              cpu: 100m
+              memory: 128Mi
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 11080
+            initialDelaySeconds: 15
+            periodSeconds: 15
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 11080
+            initialDelaySeconds: 3
+            periodSeconds: 30
+      imagePullSecrets:
+        - name: pull-secret

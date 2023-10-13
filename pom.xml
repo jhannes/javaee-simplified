@@ -1,0 +1,61 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0">
+
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.soprasteria.johannes</groupId>
+    <artifactId>javaee-devmeetup</artifactId>
+    <version>1.0-SNAPSHOT</version>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.eclipse.jetty</groupId>
+            <artifactId>jetty-servlet</artifactId>
+            <version>11.0.16</version>
+        </dependency>
+        <dependency>
+            <groupId>org.logevents</groupId>
+            <artifactId>logevents</artifactId>
+            <version>0.5.2</version>
+            <scope>runtime</scope>
+        </dependency>
+
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.11.0</version>
+                <configuration>
+                    <target>17</target>
+                    <source>17</source>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>com.google.cloud.tools</groupId>
+                <artifactId>jib-maven-plugin</artifactId>
+                <version>3.3.2</version>
+                <executions>
+                    <execution>
+                        <phase>install</phase>
+                        <goals>
+                            <goal>build</goal>
+                        </goals>
+                        <configuration>
+                            <to>
+                                <image>${docker.registry}/${project.artifactId}:${docker.imageTag}</image>
+                            </to>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+
+    <properties>
+        <docker.imageTag>latest</docker.imageTag>
+    </properties>
+
+</project>
